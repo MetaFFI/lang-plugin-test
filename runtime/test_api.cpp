@@ -3,6 +3,9 @@
 #include <boost/filesystem.hpp>
 #include <utils/foreign_function.h>
 #include <cstdint>
+#include <runtime/openffi_primitives.h>
+#include <sstream>
+
 using namespace openffi::utils;
 
 #define handle_err(err, err_len, desc) \
@@ -75,7 +78,7 @@ void call(
 	uint64_t args_len,
 	va_list params
 )
-{
+{ // TODO: check args_len
 	try
 	{
 		/* This function expects the parameters (in that order):
@@ -114,49 +117,51 @@ void call(
 		
 		
 		// read parameters
-		check_num_var(p1, double, 3.141592);
-		check_num_var(p2, double/*float*/, 2.71f); // ellipsis promotes to double
+		check_num_var(p1, openffi_float64, 3.141592);
+		check_num_var(p2, openffi_float64/*openffi_float32*/, 2.71f); // ellipsis promotes to double
 		
-		check_num_var(p3, int32_t/*int8_t*/, -10); // ellipsis promotes to int32_t
-		check_num_var(p4, int32_t/*int16_t*/, -20); // ellipsis promotes to int32_t
-		check_num_var(p5, int32_t, -30);
-		check_num_var(p6, int64_t, -40);
+		check_num_var(p3, openffi_int32/*openffi_int8*/, -10); // ellipsis promotes to int32_t
+		check_num_var(p4, openffi_int32/*openffi_int16*/, -20); // ellipsis promotes to int32_t
+		check_num_var(p5, openffi_int32, -30);
+		check_num_var(p6, openffi_int64, -40);
 		
-		check_num_var(p7, uint32_t/*uint8_t*/, 50); // ellipsis promotes to uint32_t
-		check_num_var(p8, uint32_t/*uint16_t*/, 60); // ellipsis promotes to uint32_t
-		check_num_var(p9, uint32_t, 70);
-		check_num_var(p10, uint64_t, 80);
+		check_num_var(p7, openffi_uint32/*openffi_uint8*/, 50); // ellipsis promotes to uint32_t
+		check_num_var(p8, openffi_uint32/*openffi_uint16*/, 60); // ellipsis promotes to uint32_t
+		check_num_var(p9, openffi_uint32, 70);
+		check_num_var(p10, openffi_uint64, 80);
 		
-		check_num_var(p11, int32_t , 1); // ellipsis promotes to int32_t
+		check_num_var(p11, openffi_int32/*openffi_bool*/, 1); // ellipsis promotes to int32_t
 		
-		const char* p12 = va_arg(params, const char*);
-		int64_t p12_len = va_arg(params, int64_t);
+		openffi_string p12 = va_arg(params, openffi_string);
+		openffi_size p12_len = va_arg(params, openffi_size);
 		std::string p12_str(p12, p12_len);
 		if(p12_str != "This is an input"){
 			throw std::runtime_error("p12 of type string is not \"This is an input\"");
 		}
 		
 		// string[]
-		const char* p13 = va_arg(params, const char*);
-		int64_t* p13_sizes = va_arg(params, int64_t*);
-		int64_t p13_len = va_arg(params, int64_t);
+		openffi_string* p13 = va_arg(params, openffi_string*);
+		openffi_size* p13_sizes = va_arg(params, openffi_size*);
+		openffi_size p13_len = va_arg(params, openffi_size);
 		if(p13_len != 2){
 			throw std::runtime_error("p13_len of type int64_t is not 2");
 		}
 		
-		std::string p13_elem1(p13_sizes[0], p13[0]);
+		std::string p13_elem1(p13[0], p13_sizes[0]);
 		if(p13_elem1 != "element one"){
-			throw std::runtime_error("p13_elem1 of type string is not \"element one\"");
+			std::stringstream ss;
+			ss << "p13_elem1 of type string is not \"element one\": \"" << p13_elem1 << "\"";
+			throw std::runtime_error(ss.str().c_str());
 		}
 		
-		std::string p13_elem2(p13_sizes[1], p13[1]);
-		if(p13_elem1 != "element two"){
+		std::string p13_elem2(p13[1], p13_sizes[1]);
+		if(p13_elem2 != "element two"){
 			throw std::runtime_error("p13_elem2 of type string is not \"element two\"");
 		}
 		
 		// bytes
-		const unsigned char* p14 = va_arg(params, const unsigned char*);
-		int64_t p14_len = va_arg(params, int64_t);
+		const openffi_uint8* p14 = va_arg(params, const openffi_uint8*);
+		openffi_size p14_len = va_arg(params, openffi_size);
 		if(p14_len != 5){
 			throw std::runtime_error("p14_len of type int64_t is not 5");
 		}
@@ -171,22 +176,22 @@ void call(
 		/* This function returns:
 		    String[] = {"return one", "return two"}
 		 */
-		const char** r1 = va_arg(params, const char**);
-		int64_t* r1_sizes = va_arg(params, int64_t*);
-		int64_t* r1_len = va_arg(params, int64_t*);
+		openffi_string* r1 = va_arg(params, openffi_string*);
+		openffi_size** r1_sizes = va_arg(params, openffi_size**);
+		openffi_size* r1_len = va_arg(params, openffi_size*);
+		
+		*r1_len = 2;
 		
 		const char* r1_elem1 = "return one";
 		int64_t r1_elem1_len = strlen(r1_elem1);
 		
-		const char* r1_elem2 = "return one";
+		const char* r1_elem2 = "return two";
 		int64_t r1_elem2_len = strlen(r1_elem2);
 		
 		const char* arr[2] = {r1_elem1, r1_elem2};
 		int64_t arr_sizes[2] = {r1_elem1_len, r1_elem2_len};
-		*r1 = arr[0];
-		*r1_sizes = arr_sizes[0];
-		*r1_len = 2;
-		
+		*r1 = (openffi_string)&arr;
+		*r1_sizes = (openffi_size*)&arr_sizes;
 	}
 	catch_err((char**)out_err, out_err_len, exc.what());
 }
