@@ -4,6 +4,7 @@
 #include <utils/foreign_function.h>
 #include <cstdint>
 #include <runtime/openffi_primitives.h>
+#include <runtime/args_helpers.h>
 #include <sstream>
 
 using namespace openffi::utils;
@@ -74,9 +75,9 @@ void free_function(int64_t func_id, char** /*err*/, uint32_t* /*err_len*/)
 //--------------------------------------------------------------------
 void call(
 	int64_t func_id,
-	char** out_err, uint64_t *out_err_len,
-	uint64_t args_len,
-	va_list params
+	void** parameters, uint64_t parameters_length,
+	void** return_values, uint64_t return_values_length,
+	char** out_err, uint64_t *out_err_len
 )
 { // TODO: check args_len
 	try
@@ -109,42 +110,45 @@ void call(
 			throw std::runtime_error("func_id is not 0");
 		}
 
-#define check_num_var(var_name, type, expected) \
-		type var_name = va_arg(params, type);    \
+#define check_num_var(var_name, type, expected, index) \
+		type var_name = get_arg_##type(parameters, index);    \
 		if((var_name) != (expected)){ \
 			throw std::runtime_error(#var_name" of type "#type" is not "#expected);\
 		}
 		
 		
 		// read parameters
-		check_num_var(p1, openffi_float64, 3.141592);
-		check_num_var(p2, openffi_float64/*openffi_float32*/, 2.71f); // ellipsis promotes to double
+		check_num_var(p1, openffi_float64, 3.141592, 0);
+		check_num_var(p2, openffi_float32, 2.71f, 1); // ellipsis promotes to double
 		
-		check_num_var(p3, openffi_int32/*openffi_int8*/, -10); // ellipsis promotes to int32_t
-		check_num_var(p4, openffi_int32/*openffi_int16*/, -20); // ellipsis promotes to int32_t
-		check_num_var(p5, openffi_int32, -30);
-		check_num_var(p6, openffi_int64, -40);
+		check_num_var(p3, openffi_int8, -10, 2); // ellipsis promotes to int32_t
+		check_num_var(p4, openffi_int16, -20, 3); // ellipsis promotes to int32_t
+		check_num_var(p5, openffi_int32, -30, 4);
+		check_num_var(p6, openffi_int64, -40, 5);
 		
-		check_num_var(p7, openffi_uint32/*openffi_uint8*/, 50); // ellipsis promotes to uint32_t
-		check_num_var(p8, openffi_uint32/*openffi_uint16*/, 60); // ellipsis promotes to uint32_t
-		check_num_var(p9, openffi_uint32, 70);
-		check_num_var(p10, openffi_uint64, 80);
+		check_num_var(p7, openffi_uint8, 50, 6); // ellipsis promotes to uint32_t
+		check_num_var(p8, openffi_uint16, 60, 7); // ellipsis promotes to uint32_t
+		check_num_var(p9, openffi_uint32, 70, 8);
+		check_num_var(p10, openffi_uint64, 80, 9);
 		
-		check_num_var(p11, openffi_int32/*openffi_bool*/, 1); // ellipsis promotes to int32_t
+		check_num_var(p11, openffi_bool, 1, 10); // ellipsis promotes to int32_t
 		
-		openffi_string p12 = va_arg(params, openffi_string);
-		openffi_size p12_len = va_arg(params, openffi_size);
+		openffi_string p12 = (openffi_string)get_arg_pointer_type(parameters, 11);
+		openffi_size p12_len = get_arg_openffi_size(parameters, 12);
+		
 		std::string p12_str(p12, p12_len);
 		if(p12_str != "This is an input"){
-			throw std::runtime_error("p12 of type string is not \"This is an input\"");
+			std::stringstream ss;
+			ss << "p12 of type string is not \"This is an input\", but \"" << p12_str.c_str() << "\"";
+			throw std::runtime_error(ss.str().c_str());
 		}
 		
 		// string[]
-		openffi_string* p13 = va_arg(params, openffi_string*);
-		openffi_size* p13_sizes = va_arg(params, openffi_size*);
-		openffi_size p13_len = va_arg(params, openffi_size);
+		openffi_string* p13 = (openffi_string*)get_arg_pointer_type(parameters, 13);
+		openffi_size* p13_sizes = (openffi_size*)get_arg_pointer_type(parameters, 14);
+		openffi_size p13_len = get_arg_openffi_size(parameters, 15);
 		if(p13_len != 2){
-			throw std::runtime_error("p13_len of type int64_t is not 2");
+			throw std::runtime_error("p13_len of type openffi_size is not 2");
 		}
 		
 		std::string p13_elem1(p13[0], p13_sizes[0]);
@@ -160,8 +164,8 @@ void call(
 		}
 		
 		// bytes
-		const openffi_uint8* p14 = va_arg(params, const openffi_uint8*);
-		openffi_size p14_len = va_arg(params, openffi_size);
+		const openffi_uint8* p14 = (openffi_uint8*)get_arg_pointer_type(parameters, 16);
+		openffi_size p14_len = get_arg_openffi_size(parameters, 17);
 		if(p14_len != 5){
 			throw std::runtime_error("p14_len of type int64_t is not 5");
 		}
@@ -176,22 +180,16 @@ void call(
 		/* This function returns:
 		    String[] = {"return one", "return two"}
 		 */
-		openffi_string* r1 = va_arg(params, openffi_string*);
-		openffi_size** r1_sizes = va_arg(params, openffi_size**);
-		openffi_size* r1_len = va_arg(params, openffi_size*);
-		
-		*r1_len = 2;
-		
+		openffi_size* r1_len = new openffi_size(2);
 		const char* r1_elem1 = "return one";
-		int64_t r1_elem1_len = strlen(r1_elem1);
-		
 		const char* r1_elem2 = "return two";
-		int64_t r1_elem2_len = strlen(r1_elem2);
 		
-		const char* arr[2] = {r1_elem1, r1_elem2};
-		int64_t arr_sizes[2] = {r1_elem1_len, r1_elem2_len};
-		*r1 = (openffi_string)&arr;
-		*r1_sizes = (openffi_size*)&arr_sizes;
+		const char** arr = new const char*[2]{r1_elem1, r1_elem2};
+		openffi_size* arr_sizes = new openffi_size[2]{strlen(r1_elem1), strlen(r1_elem2)};
+		
+		set_arg(return_values, 0, arr);
+		set_arg(return_values, 1, arr_sizes);
+		set_arg(return_values, 2, r1_len);
 	}
 	catch_err((char**)out_err, out_err_len, exc.what());
 }
