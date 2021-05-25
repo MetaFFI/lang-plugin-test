@@ -80,6 +80,7 @@ void call(
 	char** out_err, uint64_t *out_err_len
 )
 { // TODO: check args_len
+	
 	try
 	{
 		/* This function expects the parameters (in that order):
@@ -116,7 +117,6 @@ void call(
 			throw std::runtime_error(#var_name" of type "#type" is not "#expected);\
 		}
 		
-		
 		// read parameters
 		check_num_var(p1, openffi_float64, 3.141592, 0);
 		check_num_var(p2, openffi_float32, 2.71f, 1); // ellipsis promotes to double
@@ -133,8 +133,12 @@ void call(
 		
 		check_num_var(p11, openffi_bool, 1, 10); // ellipsis promotes to int32_t
 		
-		openffi_string p12 = (openffi_string)get_arg_pointer_type(parameters, 11);
-		openffi_size p12_len = get_arg_openffi_size(parameters, 12);
+		//openffi_string p12 = (openffi_string)get_arg_pointer_type(parameters, 11);
+		//openffi_size p12_len = get_arg_openffi_size(parameters, 12);
+		
+		
+		openffi_size p12_len;
+		openffi_string p12 = get_arg_openffi_string(parameters, 11, &p12_len);
 		
 		std::string p12_str(p12, p12_len);
 		if(p12_str != "This is an input"){
@@ -144,9 +148,10 @@ void call(
 		}
 		
 		// string[]
-		openffi_string* p13 = (openffi_string*)get_arg_pointer_type(parameters, 13);
-		openffi_size* p13_sizes = (openffi_size*)get_arg_pointer_type(parameters, 14);
-		openffi_size p13_len = get_arg_openffi_size(parameters, 15);
+		openffi_size* p13_sizes;
+		openffi_size p13_len;
+		openffi_string* p13 = (openffi_string*)get_arg_openffi_string_array(parameters, 13, &p13_sizes, &p13_len);
+		
 		if(p13_len != 2){
 			throw std::runtime_error("p13_len of type openffi_size is not 2");
 		}
@@ -164,8 +169,8 @@ void call(
 		}
 		
 		// bytes
-		const openffi_uint8* p14 = (openffi_uint8*)get_arg_pointer_type(parameters, 16);
-		openffi_size p14_len = get_arg_openffi_size(parameters, 17);
+		openffi_size p14_len;
+		const openffi_uint8* p14 = get_arg_openffi_uint8_array(parameters, 16, &p14_len);
 		if(p14_len != 5){
 			throw std::runtime_error("p14_len of type int64_t is not 5");
 		}
@@ -187,9 +192,7 @@ void call(
 		const char** arr = new const char*[2]{r1_elem1, r1_elem2};
 		openffi_size* arr_sizes = new openffi_size[2]{strlen(r1_elem1), strlen(r1_elem2)};
 		
-		set_arg(return_values, 0, arr);
-		set_arg(return_values, 1, arr_sizes);
-		set_arg(return_values, 2, r1_len);
+		set_arg_openffi_string_array(return_values, 0, (openffi_string*)arr, (openffi_size*)arr_sizes, r1_len);
 	}
 	catch_err((char**)out_err, out_err_len, exc.what());
 }
