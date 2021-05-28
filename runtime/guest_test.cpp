@@ -226,7 +226,6 @@ int test_guest(const char* lang_plugin, const char* function_path)
 	printf("test_guest - loading function\n");
 	int64_t function_id = load_function(lang_plugin, strlen(lang_plugin), function_path, strlen(function_path), -1, &err, reinterpret_cast<uint32_t *>(&err_len));
 	
-	printf("test_guest - AFTER loading function\n");
 	if(err != nullptr){
 		printf("Failed to load plugin: %s. Error: %s\n", lang_plugin, err);
 		return 1;
