@@ -214,6 +214,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 	
 	char* err = nullptr;
 	uint64_t err_len = 0;
+	
 	/*
 	std::string language_plugin(lang_plugin);
 	load_runtime_plugin(language_plugin.c_str(), language_plugin.length(), &err, reinterpret_cast<uint32_t *>(&err_len));
@@ -227,7 +228,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 	int64_t function_id = load_function(lang_plugin, strlen(lang_plugin), function_path, strlen(function_path), -1, &err, reinterpret_cast<uint32_t *>(&err_len));
 	
 	if(err != nullptr){
-		printf("Failed to load plugin: %s. Error: %s\n", lang_plugin, err);
+		printf("Failed to load runtime \"%s\" or function \"%s\". Error: %s\n", lang_plugin, function_path, err);
 		return 1;
 	}
 	
@@ -304,7 +305,14 @@ int test_guest(const char* lang_plugin, const char* function_path)
 	     &err, reinterpret_cast<uint64_t *>(&err_len)
 	);
 	
-	printf("preparing return values\n");
+	printf("checking for errors\n");
+	if(err)
+	{
+		printf("Error returned from guest: %s\n", std::string(err, err_len).c_str());
+		return 2;
+	}
+	
+	printf("checking return values\n");
 	
 	/* Expects return of:
 	    String[] = {"return one", "return two"}
@@ -316,19 +324,19 @@ int test_guest(const char* lang_plugin, const char* function_path)
 	if(r1_len != 2)
 	{
 		printf("returned array is not of size 2. size:%ld\n", r1_len);
-		return 2;
+		return 3;
 	}
 	
 	if(std::string(r1[0], r1_sizes[0]) != "return one")
 	{
 		printf("r1[0] is not \"return one\"\n");
-		return 3;
+		return 4;
 	}
 	
 	if(std::string(r1[1], r1_sizes[1]) != "return two")
 	{
 		printf("r1[0] is not \"return two\"\n");
-		return 4;
+		return 5;
 	}
 	
 	return 0;
