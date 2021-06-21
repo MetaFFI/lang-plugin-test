@@ -1,10 +1,17 @@
 #include "guest_test.h"
-#include <include/args_helpers.h>
+#include <runtime/common_data_type_helper_loader.h>
+#include <runtime/common_data_type_parser.h>
 #include <string>
 #include <cstdio>
+#include <cstring>
 
+using namespace openffi::utils;
 
+const char* guest_idl = R"(idl_filename": "test","idl_extension": ".proto","idl_filename_with_extension": "test.proto","idl_full_path": "","modules": [{"name": "Service1","target_language": "test","comment": "Comments for Service1\n","tags": {"openffi_function_path": "package=main","openffi_target_language": "python3"},"functions": [{"name": "f1","comment": "f1 comment\nparam1 comment\n","tags": {"openffi_function_path": "function=f1"},"path_to_foreign_function": {"module": "$PWD/temp","package": "GoFuncs","function": "f1"},"parameter_type": "Params1","return_values_type": "Return1","parameters": [{ "name": "p1", "type": "float64", "comment": "= 3.141592", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p2", "type": "float32", "comment": "= 2.71", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p3", "type": "int8", "comment": "= -10", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p4", "type": "int16", "comment": "= -20", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p5", "type": "int32", "comment": "= -30", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p6", "type": "int64", "comment": "= -40", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p7", "type": "uint8", "comment": "= 50", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p8", "type": "uint16", "comment": "= 60", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p9", "type": "uint32", "comment": "= 70", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p10", "type": "uint64", "comment": "= 80", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p11", "type": "bool", "comment": "= true", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p12", "type": "string", "comment": "= This is an input", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p13", "type": "string", "comment": "= {element one, element two}", "tags": null, "is_array": true, "pass_method": "" },{ "name": "p14", "type": "uint8", "comment": "= {2, 4, 6, 8, 10}", "tags": null, "is_array": true, "pass_method": "" }],"return_values": [{"name": "r1","type": "string","comment": "= {return one, return two}","tags": null,"is_array": true,"pass_method": ""}]}]}]});)";
+
+/*
 void* xllr_handle = nullptr;
+
 
 void (*pcall)(const char*, uint32_t,
               int64_t,
@@ -202,30 +209,20 @@ bool load_xllr()
 	return true;
 }
 
+*/
+
 // 0 - success
 // otherwise - failed
 int test_guest(const char* lang_plugin, const char* function_path)
 {
-	printf("test_guest - loading XLLR\n");
-	if(!load_xllr())
-	{
-		return 1;
-	}
+    load_xllr();
+    load_args_helpers();
 	
 	char* err = nullptr;
 	uint64_t err_len = 0;
 	
-	/*
-	std::string language_plugin(lang_plugin);
-	load_runtime_plugin(language_plugin.c_str(), language_plugin.length(), &err, reinterpret_cast<uint32_t *>(&err_len));
-	if(err != nullptr){
-		printf("Failed to load plugin: %s. Error: %s\n", lang_plugin, err);
-		return 1;
-	}
-	*/
-	
 	printf("test_guest - loading function\n");
-	int64_t function_id = load_function(lang_plugin, strlen(lang_plugin), function_path, strlen(function_path), -1, &err, reinterpret_cast<uint32_t *>(&err_len));
+	int64_t function_id = xllr_load_function(lang_plugin, strlen(lang_plugin), function_path, strlen(function_path), -1, &err, reinterpret_cast<uint32_t *>(&err_len));
 	
 	if(err != nullptr){
 		printf("Failed to load runtime \"%s\" or function \"%s\". Error: %s\n", lang_plugin, function_path, err);
@@ -252,56 +249,71 @@ int test_guest(const char* lang_plugin, const char* function_path)
 	    string[] = {"element one", "element two"}
 	    
 	    bytes = {2, 4, 6, 8, 10}
+
+	    matrix = { {10, 20, 30}, {40, 50, 60} }
 	*/
 	
 	printf("preparing parameters\n");
-	void** parameters = alloc_args_buffer(18);
-	void** return_values = alloc_args_buffer(3);
+	void** parameters = alloc_args_buffer(38);
+	void** return_values = alloc_args_buffer(38);
+	
+	int index = 0;
 	
 	openffi_float64 p1 = 3.141592;
-	set_arg(parameters, 0, &p1);
+	index = set_arg_openffi_float64(parameters, index, &p1);
 	openffi_float32 p2 = 2.71f;
-	set_arg(parameters, 1, &p2);
+	index = set_arg_openffi_float32(parameters, index, &p2);
 	
 	openffi_int8 p3 = -10;
-	set_arg_openffi_int8(parameters, 2, &p3);
+	index = set_arg_openffi_int8(parameters, index, &p3);
 	openffi_int16 p4 = -20;
-	set_arg_openffi_int16(parameters, 3, &p4);
+	index = set_arg_openffi_int16(parameters, index, &p4);
 	openffi_int32 p5 = -30;
-	set_arg_openffi_int32(parameters, 4, &p5);
+	index = set_arg_openffi_int32(parameters, index, &p5);
 	openffi_int64 p6 = -40;
-	set_arg_openffi_int64(parameters, 5, &p6);
+	index = set_arg_openffi_int64(parameters, index, &p6);
 	
 	openffi_uint8 p7 = 50;
-	set_arg_openffi_uint8(parameters, 6, &p7);
+	index = set_arg_openffi_uint8(parameters, index, &p7);
 	openffi_uint16 p8 = 60;
-	set_arg_openffi_uint16(parameters, 7, &p8);
+	index = set_arg_openffi_uint16(parameters, index, &p8);
 	openffi_uint32 p9 = 70;
-	set_arg_openffi_uint32(parameters, 8, &p9);
+	index = set_arg_openffi_uint32(parameters, index, &p9);
 	openffi_uint64 p10 = 80;
-	set_arg_openffi_uint64(parameters, 9, &p10);
+	index = set_arg_openffi_uint64(parameters, index, &p10);
 	
 	openffi_bool p11 = 1;
-	set_arg_openffi_bool(parameters, 10, &p11);
+	index = set_arg_openffi_bool(parameters, index, &p11);
 	
 	const char* p12 = "This is an input";
 	openffi_size p12_len = strlen("This is an input");
-	set_arg_openffi_string(parameters, 11, (char*)p12, &p12_len);
+	index = set_arg_openffi_string(parameters, index, (char*)p12, &p12_len);
 	
 	const char* p13[] = {"element one", "element two"};
 	openffi_size p13_sizes[] = {strlen("element one"), strlen("element two")};
-	openffi_size p13_len = 2;
-	set_arg_openffi_string_array(parameters, 13, const_cast<openffi_string *>(p13), p13_sizes, &p13_len);
+	openffi_size p13_dimentions[] = { 2 };
+	openffi_size p13_dimensions_length = 1;
+	index = set_arg_openffi_string_array(parameters, index, const_cast<openffi_string*>(p13), p13_sizes, p13_dimentions, &p13_dimensions_length);
 	
 	openffi_uint8 p14[] = {2, 4, 6, 8, 10};
-	openffi_size p14_len = 5;
-	set_arg_openffi_uint8_array(parameters, 16, reinterpret_cast<openffi_uint8 *>(&p14), &p14_len);
+	openffi_size p14_dimensions[] = {5};
+	openffi_size p14_dimensions_length = 1;
+	index = set_arg_openffi_uint8_array(parameters, index, reinterpret_cast<openffi_uint8 *>(p14), p14_dimensions, &p14_dimensions_length);
+	
+	// matrix
+	uint32_t** resmatrix = new uint32_t*[2]{
+			new uint32_t[3]{ 10, 20, 30 },
+			new uint32_t[3]{ 40, 50, 60 },
+	};
+	openffi_size* matrix_dimensions = new openffi_size[2]{ 2, 3 };
+	openffi_size p15_dimensions_length = 2;
+	index = set_arg_openffi_uint32_array(parameters, index, (uint32_t*)resmatrix, matrix_dimensions, &p15_dimensions_length);
 	
 	printf("calling guest function\n");
-	call(lang_plugin, strlen(lang_plugin),
+	xllr_call(lang_plugin, strlen(lang_plugin),
 	     function_id,
-	     parameters, 18,
-	     return_values, 3,
+	     parameters, 38,
+	     return_values, 38,
 	     &err, reinterpret_cast<uint64_t *>(&err_len)
 	);
 	
@@ -312,33 +324,165 @@ int test_guest(const char* lang_plugin, const char* function_path)
 		return 2;
 	}
 	
-	printf("checking return values\n");
+	printf("checking return values TODO!!!!\n");
 	
 	/* Expects return of:
-	    String[] = {"return one", "return two"}
+	    double = 0.57721
+	    float = 3.359f
+
+	    int8 = -11
+	    int16 = -21
+	    int32 = -31
+	    int64 = -41
+
+	    uint8 = 51
+	    uint16 = 61
+	    uint32 = 71
+	    uint64 = 81
+
+	    bool = 1
+
+	    string = "This is an output"
+	    string[] = ["return one", "return two"]
+
+	    bytes = [20, 40, 60, 80, 100]
+
+	    matrix = [ [11,21,31], [41,51,61] ]
 	*/
-	openffi_size* r1_sizes;
-	openffi_size r1_len;
-	openffi_string* r1 = get_arg_openffi_string_array(return_values, 0, &r1_sizes, &r1_len);
-	
-	if(r1_len != 2)
-	{
-		printf("returned array is not of size 2. size:%ld\n", r1_len);
-		return 3;
+
+	openffi_float64 r1;
+	openffi_float32 r2;
+	openffi_int8 r3;
+	openffi_int16 r4;
+	openffi_int32 r5;
+	openffi_int64 r6;
+	openffi_uint8 r7;
+	openffi_uint16 r8;
+	openffi_uint32 r9;
+	openffi_uint64 r10;
+	openffi_bool r11;
+	openffi_string r12;
+	openffi_size r12_len;
+	string_n_array_wrapper<openffi_string> r13;
+	numeric_n_array_wrapper<openffi_uint8> r14;
+	numeric_n_array_wrapper<openffi_uint32> r15;
+
+	common_data_type_parse_callbacks cb
+	(
+			[&](const openffi_float32& p){ r2 = p; }, [&](const numeric_n_array_wrapper<openffi_float32>& p){},
+			[&](const openffi_float64& p){ r1 = p; }, [&](const numeric_n_array_wrapper<openffi_float64>& p){},
+			[&](const openffi_int8& p){ r3 = p; }, [&](const numeric_n_array_wrapper<openffi_int8>& p){},
+			[&](const openffi_int16& p){ r4 = p; }, [&](const numeric_n_array_wrapper<openffi_int16>& p){},
+			[&](const openffi_int32& p){ r5 = p; }, [&](const numeric_n_array_wrapper<openffi_int32>& p){},
+			[&](const openffi_int64& p){ r6 = p; }, [&](const numeric_n_array_wrapper<openffi_int64>& p){},
+			[&](const openffi_uint8& p){ r7 = p; }, [&](const numeric_n_array_wrapper<openffi_uint8>& p){ r14 = p; },
+			[&](const openffi_uint16& p){ r8 = p; }, [&](const numeric_n_array_wrapper<openffi_uint16>& p){},
+			[&](const openffi_uint32& p){ r9 = p; }, [&](const numeric_n_array_wrapper<openffi_uint32>& p){ r15 = p; },
+			[&](const openffi_uint64& p){ r10 = p; }, [&](const numeric_n_array_wrapper<openffi_uint64>& p){},
+			[&](const openffi_bool& p){ r11 = p; }, [&](const numeric_n_array_wrapper<openffi_bool>& p){},
+			[&](const openffi_string& p, openffi_size s){ r12 = p; r12_len = s; }, [&](const string_n_array_wrapper<openffi_string>& p){ r13 = p; },
+			[&](const openffi_string8& p, openffi_size s){}, [&](const string_n_array_wrapper<openffi_string8>& p){},
+			[&](const openffi_string16& p, openffi_size s){}, [&](const string_n_array_wrapper<openffi_string16>& p){},
+			[&](const openffi_string32& p, openffi_size s){}, [&](const string_n_array_wrapper<openffi_string32>& p){}
+	);
+
+	common_data_type_parser parser(return_values, 38, cb);
+	parser.parse();
+
+#define check_num_var(var_name, expected)\
+	if((var_name) != (expected)){ throw std::runtime_error(#var_name" of type is not "#expected); }
+
+	// check parameters
+	check_num_var(r1, 0.57721);
+	check_num_var(r2, 3.359f);
+
+	check_num_var(r3, -11);
+	check_num_var(r4, -21);
+	check_num_var(r5, -31);
+	check_num_var(r6, -41);
+
+	check_num_var(r7, 51);
+	check_num_var(r8, 61);
+	check_num_var(r9, 71);
+	check_num_var(r10, 81);
+
+	check_num_var(r11, 1);
+
+	std::string r12_str(r12, r12_len);
+	if(r12_str != "This is an output"){
+		std::stringstream ss;
+		ss << R"(r12 of type string is not "This is an input", but ")" << r12_str.c_str() << "\"";
+		throw std::runtime_error(ss.str().c_str());
 	}
-	
-	if(std::string(r1[0], r1_sizes[0]) != "return one")
-	{
-		printf("r1[0] is not \"return one\"\n");
-		return 4;
+
+	// string[]
+	if(r13.get_dimensions_count() != 1){
+		throw std::runtime_error("p13 array is not of 1 dimension");
 	}
-	
-	if(std::string(r1[1], r1_sizes[1]) != "return two")
-	{
-		printf("r1[0] is not \"return two\"\n");
-		return 5;
+
+	if(r13.get_dimension_length(0) != 2){
+		throw std::runtime_error("p13 array length of type openffi_size is not 2");
 	}
-	
+
+	openffi_string r13_elem1_pchar;
+	openffi_size r13_elem1_size;
+	openffi_size arr_index[] = {0};
+	r13.get_elem_at(arr_index, 1, &r13_elem1_pchar, &r13_elem1_size);
+	std::string r13_elem1(r13_elem1_pchar, r13_elem1_size);
+	if(r13_elem1 != "return one")
+	{
+		std::stringstream ss;
+		ss << R"(r13_elem1 of type string is not "return one": ")" << r13_elem1 << "\"";
+		throw std::runtime_error(ss.str().c_str());
+	}
+
+	openffi_string r13_elem2_pchar;
+	openffi_size r13_elem2_size;
+	arr_index[0] = 1;
+	r13.get_elem_at(arr_index, 1, &r13_elem2_pchar, &r13_elem2_size);
+	std::string r13_elem2(r13_elem2_pchar, r13_elem2_size);
+	if(r13_elem2 != "return two"){
+		throw std::runtime_error("r13_elem2 of type string is not \"return two\"");
+	}
+
+	// bytes
+	if(!r14.is_simple_array() || r14.get_simple_array_length() != 5){
+		throw std::runtime_error("p14_len of type int64_t is not 5");
+	}
+
+	arr_index[0] = 0; if(r14.get_elem_at(arr_index, 1) != 20){ throw std::runtime_error("r14[0] of type unsigned char is not 20"); }
+	arr_index[0] = 1; if(r14.get_elem_at(arr_index, 1) != 40){ throw std::runtime_error("r14[1] of type unsigned char is not 40"); }
+	arr_index[0] = 2; if(r14.get_elem_at(arr_index, 1) != 60){ throw std::runtime_error("r14[2] of type unsigned char is not 60"); }
+	arr_index[0] = 3; if(r14.get_elem_at(arr_index, 1) != 80){ throw std::runtime_error("r14[3] of type unsigned char is not 80"); }
+	arr_index[0] = 4; if(r14.get_elem_at(arr_index, 1) != 100){ throw std::runtime_error("r14[4] of type unsigned char is not 100"); }
+
+	// matrix[2][3]
+	if(r15.dimensions_length != 2){
+		throw std::runtime_error("p15 matrix is not of 2 dimensions");
+	}
+
+	if(r15.dimensions[0] != 2){
+		throw std::runtime_error("p15 first dimension is not 2");
+	}
+
+	if(r15.dimensions[1] != 3){
+		throw std::runtime_error("p15 second dimension is not 3");
+	}
+
+#define set_index(arr, i, j) arr[0] = i; (arr)[1] = j;
+
+	openffi_size mat_index[] = { 0, 0 };
+	set_index(mat_index, 0, 0); if(r15.get_elem_at(mat_index, 2) != 11){ throw std::runtime_error("r15[0][0] of type unsigned char is not 11"); }
+	set_index(mat_index, 0, 1); if(r15.get_elem_at(mat_index, 2) != 21){ throw std::runtime_error("r15[0][1] of type unsigned char is not 21"); }
+	set_index(mat_index, 0, 2); if(r15.get_elem_at(mat_index, 2) != 31){ throw std::runtime_error("r15[0][2] of type unsigned char is not 31"); }
+	set_index(mat_index, 1, 0); if(r15.get_elem_at(mat_index, 2) != 41){ throw std::runtime_error("r15[1][0] of type unsigned char is not 41"); }
+	set_index(mat_index, 1, 1); if(r15.get_elem_at(mat_index, 2) != 51){ throw std::runtime_error("r15[1][1] of type unsigned char is not 51"); }
+	set_index(mat_index, 1, 2); if(r15.get_elem_at(mat_index, 2) != 61){ throw std::runtime_error("r15[1][2] of type unsigned char is not 61"); }
+
+	err_len = 0;
+	xllr_free_runtime_plugin("xllr.test", strlen("xllr.test"), &err, reinterpret_cast<uint32_t*>(&err_len));
+	free_xllr();
+
 	return 0;
 }
 
