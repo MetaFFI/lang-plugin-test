@@ -7,7 +7,7 @@
 
 using namespace openffi::utils;
 
-const char* host_idl = R"(idl_filename": "test","idl_extension": ".proto","idl_filename_with_extension": "test.proto","idl_full_path": "","modules": [{"name": "Service1","target_language": "test","comment": "Comments for Service1\n","tags": {"openffi_function_path": "package=main","openffi_target_language": "python3"},"functions": [{"name": "f1","comment": "f1 comment\nparam1 comment\n","tags": {"openffi_function_path": "function=f1"},"path_to_foreign_function": {"module": "$PWD/temp","package": "GoFuncs","function": "f1"},"parameter_type": "Params1","return_values_type": "Return1","parameters": [{ "name": "p1", "type": "float64", "comment": "= 3.141592", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p2", "type": "float32", "comment": "= 2.71", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p3", "type": "int8", "comment": "= -10", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p4", "type": "int16", "comment": "= -20", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p5", "type": "int32", "comment": "= -30", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p6", "type": "int64", "comment": "= -40", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p7", "type": "uint8", "comment": "= 50", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p8", "type": "uint16", "comment": "= 60", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p9", "type": "uint32", "comment": "= 70", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p10", "type": "uint64", "comment": "= 80", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p11", "type": "bool", "comment": "= true", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p12", "type": "string", "comment": "= This is an input", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p13", "type": "string", "comment": "= {element one, element two}", "tags": null, "is_array": true, "pass_method": "" },{ "name": "p14", "type": "uint8", "comment": "= {2, 4, 6, 8, 10}", "tags": null, "is_array": true, "pass_method": "" }],"return_values": [{"name": "r1","type": "string","comment": "= {return one, return two}","tags": null,"is_array": true,"pass_method": ""}]}]}]});)";
+const char* host_idl = R"(idl_filename": "test","idl_extension": ".proto","idl_filename_with_extension": "test.proto","idl_full_path": "","modules": [{"name": "Service1","target_language": "test","comment": "Comments for Service1\n","tags": {"openffi_function_path": "package=main","openffi_target_language": "python3"},"functions": [{"name": "f1","comment": "f1 comment\nparam1 comment\n","tags": {"openffi_function_path": "function=f1"},"path_to_foreign_function": {"module": "$PWD/temp","package": "GoFuncs","function": "f1"},"parameter_type": "Params1","return_values_type": "Return1","parameters": [{ "name": "p1", "type": "float64", "comment": "= 3.141592", "tags": null, "dimensions": 0, "pass_method": "" },{ "name": "p2", "type": "float32", "comment": "= 2.71", "tags": null, "dimensions": 0, "pass_method": "" },{ "name": "p3", "type": "int8", "comment": "= -10", "tags": null, "dimensions": 0, "pass_method": "" },{ "name": "p4", "type": "int16", "comment": "= -20", "tags": null, "dimensions": 0, "pass_method": "" },{ "name": "p5", "type": "int32", "comment": "= -30", "tags": null, "dimensions": 0, "pass_method": "" },{ "name": "p6", "type": "int64", "comment": "= -40", "tags": null, "dimensions": 0, "pass_method": "" },{ "name": "p7", "type": "uint8", "comment": "= 50", "tags": null, "dimensions": 0, "pass_method": "" },{ "name": "p8", "type": "uint16", "comment": "= 60", "tags": null, "dimensions": 0, "pass_method": "" },{ "name": "p9", "type": "uint32", "comment": "= 70", "tags": null, "dimensions": 0, "pass_method": "" },{ "name": "p10", "type": "uint64", "comment": "= 80", "tags": null, "dimensions": 0, "pass_method": "" },{ "name": "p11", "type": "bool", "comment": "= true", "tags": null, "dimensions": 0, "pass_method": "" },{ "name": "p12", "type": "string", "comment": "= This is an input", "tags": null, "dimensions": 0, "pass_method": "" },{ "name": "p13", "type": "string", "comment": "= {element one, element two}", "tags": null, "dimensions": 1, "pass_method": "" },{ "name": "p14", "type": "uint8", "comment": "= {2, 4, 6, 8, 10}", "tags": null, "dimensions": 1, "pass_method": "" }],"return_values": [{"name": "r1","type": "string","comment": "= {return one, return two}","tags": null,"dimensions": 1,"pass_method": ""}]}]}]});)";
 
 #define handle_err(err, err_len, desc) \
 	*err_len = strlen( desc ); \
@@ -223,9 +223,10 @@ void call(
 		arr_index[0] = 2; if(p14.get_elem_at(arr_index, 1) != 6){ throw std::runtime_error("p14[2] of type unsigned char is not 6"); }
 		arr_index[0] = 3; if(p14.get_elem_at(arr_index, 1) != 8){ throw std::runtime_error("p14[3] of type unsigned char is not 8"); }
 		arr_index[0] = 4; if(p14.get_elem_at(arr_index, 1) != 10){ throw std::runtime_error("p14[4] of type unsigned char is not 10"); }
-		
+
+		/*
 		// matrix[2][3]
-		if(p15.dimensions_length != 2){
+		if(p15.dimensions_lengths != 2){
 			throw std::runtime_error("p15 matrix is not of 2 dimensions");
 		}
 		
@@ -246,7 +247,7 @@ void call(
 		set_index(mat_index, 1, 0); if(p15.get_elem_at(mat_index, 2) != 40){ throw std::runtime_error("p15[1][0] of type unsigned char is not 4"); }
 		set_index(mat_index, 1, 1); if(p15.get_elem_at(mat_index, 2) != 50){ throw std::runtime_error("p15[1][1] of type unsigned char is not 5"); }
 		set_index(mat_index, 1, 2); if(p15.get_elem_at(mat_index, 2) != 60){ throw std::runtime_error("p15[1][2] of type unsigned char is not 6"); }
-
+		*/
 		
 		/* This function returns:
 		    double = 0.57721
@@ -296,16 +297,17 @@ void call(
 		const char* r1_elem2 = "return two";
 		openffi_size* r1_len = alloc_openffi_size_on_heap(2);
 		openffi_size* arr_sizes = new openffi_size[2]{strlen(r1_elem1), strlen(r1_elem2)};
-		openffi_size* str_arr_dimensions = new openffi_size[1]{ 2 };
+		openffi_size* str_arr_dimensions_lengths = new openffi_size[1]{ 2 };
 		char** arr = new char*[2]{alloc_openffi_string_on_heap(const_cast<char*>(r1_elem1), arr_sizes[0]),
 									alloc_openffi_string_on_heap(const_cast<char*>(r1_elem2), arr_sizes[1])};
-		index = set_arg_openffi_string_array(return_values, index, arr, arr_sizes, str_arr_dimensions, alloc_openffi_size_on_heap(1));
+		index = set_arg_openffi_string_array(return_values, index, arr, arr_sizes, str_arr_dimensions_lengths, alloc_openffi_size_on_heap(1));
 		
 		// byte[]
 		uint8_t* barray = new uint8_t[5]{20, 40, 60, 80, 100};
-		openffi_size* barray_dimensions = new openffi_size[1]{ 5 };
-		index = set_arg_openffi_uint8_array(return_values, index, barray, barray_dimensions, alloc_openffi_size_on_heap(1));
-		
+		openffi_size* barray_dimensions_lengths = new openffi_size[1]{ 5 };
+		index = set_arg_openffi_uint8_array(return_values, index, barray, barray_dimensions_lengths, alloc_openffi_size_on_heap(1));
+
+		/*
 		// matrix
 		uint32_t** resmatrix = new uint32_t*[2]{
 			new uint32_t[3]{ 11, 21, 31 },
@@ -313,6 +315,7 @@ void call(
 		};
 		openffi_size* matrix_dimensions = new openffi_size[2]{ 2, 3 };
 		set_arg_openffi_uint32_array(return_values, index, (uint32_t*)resmatrix, matrix_dimensions, alloc_openffi_size_on_heap(2));
+		*/
 	}
 	catch_err((char**)out_err, out_err_len, exc.what());
 }

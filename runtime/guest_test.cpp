@@ -7,7 +7,7 @@
 
 using namespace openffi::utils;
 
-const char* guest_idl = R"(idl_filename": "test","idl_extension": ".proto","idl_filename_with_extension": "test.proto","idl_full_path": "","modules": [{"name": "Service1","target_language": "test","comment": "Comments for Service1\n","tags": {"openffi_function_path": "package=main","openffi_target_language": "python3"},"functions": [{"name": "f1","comment": "f1 comment\nparam1 comment\n","tags": {"openffi_function_path": "function=f1"},"path_to_foreign_function": {"module": "$PWD/temp","package": "GoFuncs","function": "f1"},"parameter_type": "Params1","return_values_type": "Return1","parameters": [{ "name": "p1", "type": "float64", "comment": "= 3.141592", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p2", "type": "float32", "comment": "= 2.71", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p3", "type": "int8", "comment": "= -10", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p4", "type": "int16", "comment": "= -20", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p5", "type": "int32", "comment": "= -30", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p6", "type": "int64", "comment": "= -40", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p7", "type": "uint8", "comment": "= 50", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p8", "type": "uint16", "comment": "= 60", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p9", "type": "uint32", "comment": "= 70", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p10", "type": "uint64", "comment": "= 80", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p11", "type": "bool", "comment": "= true", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p12", "type": "string", "comment": "= This is an input", "tags": null, "is_array": false, "pass_method": "" },{ "name": "p13", "type": "string", "comment": "= {element one, element two}", "tags": null, "is_array": true, "pass_method": "" },{ "name": "p14", "type": "uint8", "comment": "= {2, 4, 6, 8, 10}", "tags": null, "is_array": true, "pass_method": "" }],"return_values": [{"name": "r1","type": "string","comment": "= {return one, return two}","tags": null,"is_array": true,"pass_method": ""}]}]}]});)";
+const char* guest_idl = R"({"idl_filename": "test","idl_extension": ".proto","idl_filename_with_extension": "test.proto","idl_full_path": "","modules": [{"name": "Service1","target_language": "test","comment": "Comments for Service1\n","tags": {"openffi_function_path": "package=main","openffi_target_language": "test"},"functions": [{"name": "f1","comment": "F1 comment\nparam1 comment\n","tags": {"openffi_function_path": "function=F1,openffi_guest_lib=$PWD/temp/test_OpenFFIGuest.so"},"path_to_foreign_function": {"module": "$PWD/temp","package": "GoFuncs","function": "F1"},"parameter_type": "Params1","return_values_type": "Return1","parameters": [{"name": "p1","type": "float64","comment": "= 3.141592","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p2","type": "float32","comment": "= 2.71","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p3","type": "int8","comment": "= -10","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p4","type": "int16","comment": "= -20","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p5","type": "int32","comment": "= -30","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p6","type": "int64","comment": "= -40","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p7","type": "uint8","comment": "= 50","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p8","type": "uint16","comment": "= 60","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p9","type": "uint32","comment": "= 70","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p10","type": "uint64","comment": "= 80","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p11","type": "bool","comment": "= true","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p12","type": "string","comment": "= This is an input","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p13","type": "string","comment": "= {element one, element two}","tags": null,"dimensions": 1,"pass_method": ""},{"name": "p14","type": "uint8","comment": "= {2, 4, 6, 8, 10}","tags": null,"dimensions": 1,"pass_method": ""}],"return_values": [{"name": "r1","type": "float64","comment": "= 0.57721","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r2","type": "float32","comment": "= 3.359","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r3","type": "int8","comment": "= -11","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r4","type": "int16","comment": "= -21","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r5","type": "int32","comment": "= -31","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r6","type": "int64","comment": "= -41","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r7","type": "uint8","comment": "= 51","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r8","type": "uint16","comment": "= 61","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r9","type": "uint32","comment": "= 71","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r10","type": "uint64","comment": "= 81","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r11","type": "bool","comment": "= true","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r12","type": "string","comment": "= This is an output","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r13","type": "string","comment": "= {return one, return two}","tags": null,"dimensions": 1,"pass_method": ""},{"name": "r14","type": "uint8","comment": "= {20, 40, 60, 80, 100}","tags": null,"dimensions": 1,"pass_method": ""}]}]}]})";
 
 /*
 void* xllr_handle = nullptr;
@@ -254,8 +254,8 @@ int test_guest(const char* lang_plugin, const char* function_path)
 	*/
 	
 	printf("preparing parameters\n");
-	void** parameters = alloc_args_buffer(38);
-	void** return_values = alloc_args_buffer(38);
+	void** parameters = alloc_args_buffer(34);
+	void** return_values = alloc_args_buffer(34);
 	
 	int index = 0;
 	
@@ -312,20 +312,19 @@ int test_guest(const char* lang_plugin, const char* function_path)
 	printf("calling guest function\n");
 	xllr_call(lang_plugin, strlen(lang_plugin),
 	     function_id,
-	     parameters, 38,
-	     return_values, 38,
+	     parameters, 34,
+	     return_values, 34,
 	     &err, reinterpret_cast<uint64_t *>(&err_len)
 	);
-	
-	printf("checking for errors\n");
+
 	if(err)
 	{
 		printf("Error returned from guest: %s\n", std::string(err, err_len).c_str());
 		return 2;
 	}
-	
-	printf("checking return values TODO!!!!\n");
-	
+
+	printf("No errors returned from guest\n");
+
 	/* Expects return of:
 	    double = 0.57721
 	    float = 3.359f
@@ -386,7 +385,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 			[&](const openffi_string32& p, openffi_size s){}, [&](const string_n_array_wrapper<openffi_string32>& p){}
 	);
 
-	common_data_type_parser parser(return_values, 38, cb);
+	common_data_type_parser parser(return_values, 34, cb);
 	parser.parse();
 
 #define check_num_var(var_name, expected)\
@@ -456,6 +455,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 	arr_index[0] = 3; if(r14.get_elem_at(arr_index, 1) != 80){ throw std::runtime_error("r14[3] of type unsigned char is not 80"); }
 	arr_index[0] = 4; if(r14.get_elem_at(arr_index, 1) != 100){ throw std::runtime_error("r14[4] of type unsigned char is not 100"); }
 
+	/*
 	// matrix[2][3]
 	if(r15.dimensions_length != 2){
 		throw std::runtime_error("p15 matrix is not of 2 dimensions");
@@ -478,6 +478,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 	set_index(mat_index, 1, 0); if(r15.get_elem_at(mat_index, 2) != 41){ throw std::runtime_error("r15[1][0] of type unsigned char is not 41"); }
 	set_index(mat_index, 1, 1); if(r15.get_elem_at(mat_index, 2) != 51){ throw std::runtime_error("r15[1][1] of type unsigned char is not 51"); }
 	set_index(mat_index, 1, 2); if(r15.get_elem_at(mat_index, 2) != 61){ throw std::runtime_error("r15[1][2] of type unsigned char is not 61"); }
+	*/
 
 	err_len = 0;
 	xllr_free_runtime_plugin("xllr.test", strlen("xllr.test"), &err, reinterpret_cast<uint32_t*>(&err_len));
