@@ -29,3 +29,5 @@ add_custom_command(TARGET ${target_name} POST_BUILD
 
 add_executable(xllr_test ${CMAKE_CURRENT_LIST_DIR}/test_plugin_test.c)
 target_link_libraries(xllr_test dl)
+
+add_test(NAME xllr_test COMMAND xllr_test)
