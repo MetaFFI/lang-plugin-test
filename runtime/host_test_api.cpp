@@ -122,9 +122,9 @@ void call(
 		openffi_uint32 p9;
 		openffi_uint64 p10;
 		openffi_bool p11;
-		openffi_string p12;
+		openffi_string8 p12;
 		openffi_size p12_len;
-		string_n_array_wrapper<openffi_string> p13;
+		string_n_array_wrapper<openffi_string8> p13;
 		numeric_n_array_wrapper<openffi_uint8> p14;
 
 		cdts_wrapper cdts_parameters(parameters, parameters_length);
@@ -132,73 +132,55 @@ void call(
 		cdts_parse_callbacks cps
 		(
 			[&](void* values_to_set, int index, const openffi_float32& val) { p2 = val; },
-			[&](void* values_to_set, int index, const openffi_float32* val){},
 			[&](void* values_to_set, int index, const openffi_float32* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
 			[&](void* values_to_set, int index, const openffi_float64& val) { p1 = val; },
-			[&](void* values_to_set, int index, const openffi_float64* val){ },
 			[&](void* values_to_set, int index, const openffi_float64* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
 			[&](void* values_to_set, int index, const openffi_int8& val) { p3 = val; },
-			[&](void* values_to_set, int index, const openffi_int8* val){},
 			[&](void* values_to_set, int index, const openffi_int8* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
 			[&](void* values_to_set, int index, const openffi_int16& val) { p4 = val; },
-			[&](void* values_to_set, int index, const openffi_int16* val){},
 			[&](void* values_to_set, int index, const openffi_int16* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
 			[&](void* values_to_set, int index, const openffi_int32& val) { p5 = val; },
-			[&](void* values_to_set, int index, const openffi_int32* val){},
 			[&](void* values_to_set, int index, const openffi_int32* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
 			[&](void* values_to_set, int index, const openffi_int64& val) { p6 = val; },
-			[&](void* values_to_set, int index, const openffi_int64* val){ },
 			[&](void* values_to_set, int index, const openffi_int64* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
 			[&](void* values_to_set, int index, const openffi_uint8& val) { p7 = val; },
-			[&](void* values_to_set, int index, const openffi_uint8* val){ },
 			[&](void* values_to_set, int index, const openffi_uint8* array, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 			{
 				p14 = numeric_n_array_wrapper<openffi_uint8>((openffi_uint8*)array, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
 			},
 
 			[&](void* values_to_set, int index, const openffi_uint16& val) { p8 = val; },
-			[&](void* values_to_set, int index, const openffi_uint16* val){ },
 			[&](void* values_to_set, int index, const openffi_uint16* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
 			[&](void* values_to_set, int index, const openffi_uint32& val) { p9 = val; },
-			[&](void* values_to_set, int index, const openffi_uint32* val){ },
 			[&](void* values_to_set, int index, const openffi_uint32* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
 			[&](void* values_to_set, int index, const openffi_uint64& val) { p10 = val; },
-			[&](void* values_to_set, int index, const openffi_uint64* val) { },
 			[&](void* values_to_set, int index, const openffi_uint64* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
 			[&](void* values_to_set, int index, const openffi_bool& val) { p11 = val; },
-			[&](void* values_to_set, int index, const openffi_bool* val){ },
 			[&](void* values_to_set, int index, const openffi_bool* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
-			[&](void* values_to_set, int index, const openffi_string& val, const openffi_size& s)
+			[&](void* values_to_set, int index, const openffi_string8& val, const openffi_size& s)
 			{
 				p12 = val;
 				p12_len = s;
 			},
-			[&](void* values_to_set, int index, const openffi_string* val, const openffi_size* s) {},
-			[&](void* values_to_set, int index, const openffi_string* array, const openffi_size* strings_lengths, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
+			[&](void* values_to_set, int index, const openffi_string8* array, const openffi_size* strings_lengths, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 			{
-				p13 = string_n_array_wrapper<openffi_string>((openffi_string*)array, (openffi_size*)strings_lengths, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
+				p13 = string_n_array_wrapper<openffi_string8>((openffi_string8*)array, (openffi_size*)strings_lengths, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
 			},
 
-			[&](void* values_to_set, int index, const openffi_string8& val, const openffi_size& s) {},
-			[&](void* values_to_set, int index, const openffi_string8* val, const openffi_size* s) {},
-			[&](void* values_to_set, int index, const openffi_string8*, const openffi_size*, const openffi_size*, const openffi_size&) {},
-
 			[&](void* values_to_set, int index, const openffi_string16& val, const openffi_size& s) {},
-			[&](void* values_to_set, int index, const openffi_string16* val, const openffi_size* s) {},
 			[&](void* values_to_set, int index, const openffi_string16*, const openffi_size*, const openffi_size*, const openffi_size&) {},
 
 			[&](void* values_to_set, int index, const openffi_string32& val, const openffi_size& s) {},
-			[&](void* values_to_set, int index, const openffi_string32* val, const openffi_size* s) {},
 			[&](void* values_to_set, int index, const openffi_string32*, const openffi_size*, const openffi_size*, const openffi_size&) {}
 		);
 
@@ -239,7 +221,7 @@ void call(
 			throw std::runtime_error("p13 array length of type openffi_size is not 2");
 		}
 		
-		openffi_string p13_elem1_pchar;
+		openffi_string8 p13_elem1_pchar;
 		openffi_size p13_elem1_size;
 		openffi_size arr_index[] = {0};
 		p13.get_elem_at(arr_index, 1, &p13_elem1_pchar, &p13_elem1_size);
@@ -251,7 +233,7 @@ void call(
 			throw std::runtime_error(ss.str().c_str());
 		}
 		
-		openffi_string p13_elem2_pchar;
+		openffi_string8 p13_elem2_pchar;
 		openffi_size p13_elem2_size;
 		arr_index[0] = 1;
 		p13.get_elem_at(arr_index, 1, &p13_elem2_pchar, &p13_elem2_size);
@@ -297,31 +279,24 @@ void call(
 		cdts_build_callbacks cbs
 		(
 			[&](void* values_to_set, int index, openffi_float32& val) { val = 3.359f; },
-			[&](void* values_to_set, int index, openffi_float32*& val, openffi_bool& free_required){},
 			[&](void* values_to_set, int index, openffi_float32*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required) {},
 
 			[&](void* values_to_set, int index, openffi_float64& val) { val = 0.57721; },
-			[&](void* values_to_set, int index, openffi_float64*& val, openffi_bool& free_required){},
 			[&](void* values_to_set, int index, openffi_float64*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required) {},
 
 			[&](void* values_to_set, int index, openffi_int8& val) { val = -11; },
-			[&](void* values_to_set, int index, openffi_int8*& val, openffi_bool& free_required){},
 			[&](void* values_to_set, int index, openffi_int8*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required) {},
 
 			[&](void* values_to_set, int index, openffi_int16& val) { val = -21; },
-			[&](void* values_to_set, int index, openffi_int16*& val, openffi_bool& free_required){},
 			[&](void* values_to_set, int index, openffi_int16*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required) {},
 
 			[&](void* values_to_set, int index, openffi_int32& val) { val = -31; },
-			[&](void* values_to_set, int index, openffi_int32*& val, openffi_bool& free_required){},
 			[&](void* values_to_set, int index, openffi_int32*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required) {},
 
 			[&](void* values_to_set, int index, openffi_int64& val) { val = -41; },
-			[&](void* values_to_set, int index, openffi_int64*& val, openffi_bool& free_required){},
 			[&](void* values_to_set, int index, openffi_int64*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required) {},
 
 			[&](void* values_to_set, int index, openffi_uint8& val) { val = 51; },
-			[&](void* values_to_set, int index, openffi_uint8*& val, openffi_bool& free_required){},
 			[&](void* values_to_set, int index, openffi_uint8*& array, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required)
 			{
 				array = (openffi_uint8*)malloc(sizeof(uint8_t)*5);
@@ -340,46 +315,29 @@ void call(
 			},
 
 			[&](void* values_to_set, int index, openffi_uint16& val) { val = 61; },
-			[&](void* values_to_set, int index, openffi_uint16*& val, openffi_bool& free_required)
-			{
-				val = &p8;
-				free_required = 0;
-			},
 			[&](void* values_to_set, int index, openffi_uint16*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required) {},
 
 			[&](void* values_to_set, int index, openffi_uint32& val) { val = 71; },
-			[&](void* values_to_set, int index, openffi_uint32*& val, openffi_bool& free_required)
-			{
-				val = &p9;
-				free_required = 0;
-			},
 			[&](void* values_to_set, int index, openffi_uint32*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required) {},
 
 			[&](void* values_to_set, int index, openffi_uint64& val) { val = 81; },
-			[&](void* values_to_set, int index, openffi_uint64*& val, openffi_bool& free_required)
-			{
-				val = &p10;
-				free_required = 0;
-			},
 			[&](void* values_to_set, int index, openffi_uint64*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required) {},
 
 			[&](void* values_to_set, int index, openffi_bool& val) { val = 1; },
-			[&](void* values_to_set, int index, openffi_bool*& val, openffi_bool& free_required){},
 			[&](void* values_to_set, int index, openffi_bool*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required) {},
 
-			[&](void* values_to_set, int index, openffi_string& val, openffi_size& s)
+			[&](void* values_to_set, int index, openffi_string8& val, openffi_size& s)
 			{
-				val = (openffi_string)calloc(sizeof(openffi_char), strlen("This is an output"));
+				val = (openffi_string8)calloc(sizeof(openffi_char8), strlen("This is an output"));
 				strncpy(val, "This is an output", strlen("This is an output"));
 				s = strlen("This is an output");
 			},
-			[&](void* values_to_set, int index, openffi_string*& val, openffi_size*& s, openffi_bool& free_required) {},
-			[&](void* values_to_set, int index, openffi_string*& array, openffi_size*& strings_lengths, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required)
+			[&](void* values_to_set, int index, openffi_string8*& array, openffi_size*& strings_lengths, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required)
 			{
-				array = (openffi_string*)malloc(2*sizeof(openffi_string));
+				array = (openffi_string8*)malloc(2*sizeof(openffi_string8));
 
-				array[0] = (openffi_string)calloc(sizeof(openffi_char), strlen("return one"));
-				array[1] = (openffi_string)calloc(sizeof(openffi_char), strlen("return two"));
+				array[0] = (openffi_string8)calloc(sizeof(openffi_char8), strlen("return one"));
+				array[1] = (openffi_string8)calloc(sizeof(openffi_char8), strlen("return two"));
 				strncpy(array[0], "return one", strlen("return one"));
 				strncpy(array[1], "return two", strlen("return two"));
 
@@ -395,16 +353,10 @@ void call(
 				free_required = true;
 			},
 
-			[&](void* values_to_set, int index, openffi_string8& val, openffi_size& s) {},
-			[&](void* values_to_set, int index, openffi_string8*& val, openffi_size*& s, openffi_bool& free_required) {},
-			[&](void* values_to_set, int index, openffi_string8*&, openffi_size*&, openffi_size*&, openffi_size&, openffi_bool&) {},
-
 			[&](void* values_to_set, int index, openffi_string16& val, openffi_size& s) {},
-			[&](void* values_to_set, int index, openffi_string16*& val, openffi_size*& s, openffi_bool& free_required) {},
 			[&](void* values_to_set, int index, openffi_string16*&, openffi_size*&, openffi_size*&, openffi_size&, openffi_bool&) {},
 
 			[&](void* values_to_set, int index, openffi_string32& val, openffi_size& s) {},
-			[&](void* values_to_set, int index, openffi_string32*& val, openffi_size*& s, openffi_bool& free_required) {},
 			[&](void* values_to_set, int index, openffi_string32*&, openffi_size*&, openffi_size*&, openffi_size&, openffi_bool&) {}
 		);
 
@@ -423,8 +375,8 @@ void call(
 			openffi_uint32_type,
 			openffi_uint64_type,
 			openffi_bool_type,
-			openffi_string_type,
-			openffi_string_array_type,
+			openffi_string8_type,
+			openffi_string8_array_type,
 			openffi_uint8_array_type
 		};
 
