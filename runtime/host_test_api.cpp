@@ -104,7 +104,7 @@ void call(
 		    
 		    bytes = [2, 4, 6, 8, 10]
 		    
-		    matrix = [ [1,2,3], [4,5,6] ]
+		    handle = 0x123456
 		*/
 		
 		if(func_id != 0){
@@ -126,6 +126,7 @@ void call(
 		openffi_size p12_len;
 		string_n_array_wrapper<openffi_string8> p13;
 		numeric_n_array_wrapper<openffi_uint8> p14;
+		openffi_handle p15;
 
 		cdts_wrapper cdts_parameters(parameters, parameters_length);
 
@@ -167,6 +168,9 @@ void call(
 			[&](void* values_to_set, int index, const openffi_bool& val) { p11 = val; },
 			[&](void* values_to_set, int index, const openffi_bool* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
+			[&](void* values_to_set, int index, const openffi_handle& val) { p15 = (openffi_handle)0x123456; },
+			[&](void* values_to_set, int index, const openffi_handle* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
+
 			[&](void* values_to_set, int index, const openffi_string8& val, const openffi_size& s)
 			{
 				p12 = val;
@@ -204,6 +208,8 @@ void call(
 		check_num_var(p10, 80);
 		
 		check_num_var(p11, 1);
+
+		check_num_var(p15, (openffi_handle)0x123456);
 		
 		std::string p12_str(p12, p12_len);
 		if(p12_str != "This is an input"){
@@ -274,6 +280,8 @@ void call(
 		    string[] = ["return one", "return two"]
 		    
 		    bytes = [20, 40, 60, 80, 100]
+
+		    handle = 0xABCDEF
 		*/
 
 		cdts_build_callbacks cbs
@@ -326,6 +334,9 @@ void call(
 			[&](void* values_to_set, int index, openffi_bool& val) { val = 1; },
 			[&](void* values_to_set, int index, openffi_bool*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required) {},
 
+			[&](void* values_to_set, int index, openffi_handle& val) { val = (openffi_handle)0xABCDEF; },
+			[&](void* values_to_set, int index, openffi_handle*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required) {},
+
 			[&](void* values_to_set, int index, openffi_string8& val, openffi_size& s)
 			{
 				val = (openffi_string8)calloc(sizeof(openffi_char8), strlen("This is an output"));
@@ -377,7 +388,8 @@ void call(
 			openffi_bool_type,
 			openffi_string8_type,
 			openffi_string8_array_type,
-			openffi_uint8_array_type
+			openffi_uint8_array_type,
+			openffi_handle_type
 		};
 
 		cdts_return.build(&vec_types[0], vec_types.size(), nullptr, cbs);
