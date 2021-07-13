@@ -56,13 +56,11 @@ int test_guest(const char* lang_plugin, const char* function_path)
 			string[] = {"element one", "element two"}
 
 			bytes = {2, 4, 6, 8, 10}
-
-			handle = 0x123456
 		*/
 
 		printf("preparing parameters\n");
 
-		cdts_wrapper cdts_params(15);
+		cdts_wrapper cdts_params(14);
 
 		std::vector<openffi_types> vec_types =
 		{
@@ -79,8 +77,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 			openffi_bool_type,
 			openffi_string8_type,
 			openffi_string8_array_type,
-			openffi_uint8_array_type,
-			openffi_handle_type
+			openffi_uint8_array_type
 		};
 
 		openffi_float64 p1 = 3.141592;
@@ -154,7 +151,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 				[&](void* values_to_set, int index, openffi_bool*& arr, openffi_size*& dimensions_lengths,
 				    openffi_size& dimensions, openffi_bool& free_required) {},
 
-				[&](void* values_to_set, int index, openffi_handle& val) { val = (openffi_handle)0x123456; },
+				[&](void* values_to_set, int index, openffi_handle& val) {},
 				[&](void* values_to_set, int index, openffi_handle*& arr, openffi_size*& dimensions_lengths,
 				    openffi_size& dimensions, openffi_bool& free_required) {},
 
@@ -184,7 +181,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 
 		printf("calling guest function\n");
 
-		cdts_wrapper cdts_return(15);
+		cdts_wrapper cdts_return(14);
 
 		xllr_call(lang_plugin, strlen(lang_plugin),
 		          function_id,
@@ -220,8 +217,6 @@ int test_guest(const char* lang_plugin, const char* function_path)
 			string[] = ["return one", "return two"]
 
 			bytes = [20, 40, 60, 80, 100]
-
-			handle = 0xABCDRF
 		*/
 
 		openffi_float64 r1;
@@ -239,7 +234,6 @@ int test_guest(const char* lang_plugin, const char* function_path)
 		openffi_size r12_len;
 		string_n_array_wrapper<openffi_string8> r13;
 		numeric_n_array_wrapper<openffi_uint8> r14;
-		openffi_handle r15;
 
 		cdts_parse_callbacks cps
 		(
@@ -291,7 +285,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 				[&](void* values_to_set, int index, const openffi_bool* arr,
 				    const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
-				[&](void* values_to_set, int index, const openffi_handle& val) { r15 = val; },
+				[&](void* values_to_set, int index, const openffi_handle& val) {},
 				[&](void* values_to_set, int index, const openffi_handle* arr,
 				    const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
@@ -341,8 +335,6 @@ int test_guest(const char* lang_plugin, const char* function_path)
 		check_num_var(r10, 81);
 
 		check_num_var(r11, 1);
-
-		check_num_var(r15, (openffi_handle)0xABCDEF);
 
 		std::string r12_str(r12, r12_len);
 		if (r12_str != "This is an output") {

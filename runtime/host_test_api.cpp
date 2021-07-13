@@ -81,6 +81,8 @@ void call(
 {
 	try
 	{
+		cdts_wrapper cdts_parameters(parameters, parameters_length);
+
 		/* This function expects the parameters (in that order):
 		    func_id = 0
 		    
@@ -103,8 +105,6 @@ void call(
 		    string[] = ["element one", "element two"]
 		    
 		    bytes = [2, 4, 6, 8, 10]
-		    
-		    handle = 0x123456
 		*/
 		
 		if(func_id != 0){
@@ -126,9 +126,6 @@ void call(
 		openffi_size p12_len;
 		string_n_array_wrapper<openffi_string8> p13;
 		numeric_n_array_wrapper<openffi_uint8> p14;
-		openffi_handle p15;
-
-		cdts_wrapper cdts_parameters(parameters, parameters_length);
 
 		cdts_parse_callbacks cps
 		(
@@ -168,7 +165,7 @@ void call(
 			[&](void* values_to_set, int index, const openffi_bool& val) { p11 = val; },
 			[&](void* values_to_set, int index, const openffi_bool* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
-			[&](void* values_to_set, int index, const openffi_handle& val) { p15 = (openffi_handle)0x123456; },
+			[&](void* values_to_set, int index, const openffi_handle& val) {},
 			[&](void* values_to_set, int index, const openffi_handle* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions) {},
 
 			[&](void* values_to_set, int index, const openffi_string8& val, const openffi_size& s)
@@ -190,8 +187,11 @@ void call(
 
 		cdts_parameters.parse(nullptr, cps);
 
-#define check_num_var(var_name, expected)\
-		if((var_name) != (expected)){ throw std::runtime_error(#var_name" of type is not "#expected); }
+#define check_num_var(var_name, expected) \
+		if((var_name) != (expected)){           \
+		std::stringstream err_ss;               \
+		err_ss << #var_name"=" << var_name << " and not as expected = "#expected;\
+		throw std::runtime_error(err_ss.str()); }
 		
 		// check parameters
 		check_num_var(p1, 3.141592);
@@ -209,8 +209,6 @@ void call(
 		
 		check_num_var(p11, 1);
 
-		check_num_var(p15, (openffi_handle)0x123456);
-		
 		std::string p12_str(p12, p12_len);
 		if(p12_str != "This is an input"){
 			std::stringstream ss;
@@ -259,7 +257,6 @@ void call(
 		arr_index[0] = 3; if(p14.get_elem_at(arr_index, 1) != 8){ throw std::runtime_error("p14[3] of type unsigned char is not 8"); }
 		arr_index[0] = 4; if(p14.get_elem_at(arr_index, 1) != 10){ throw std::runtime_error("p14[4] of type unsigned char is not 10"); }
 
-
 		/* This function returns:
 		    double = 0.57721
 		    float = 3.359f
@@ -280,8 +277,6 @@ void call(
 		    string[] = ["return one", "return two"]
 		    
 		    bytes = [20, 40, 60, 80, 100]
-
-		    handle = 0xABCDEF
 		*/
 
 		cdts_build_callbacks cbs
@@ -334,7 +329,7 @@ void call(
 			[&](void* values_to_set, int index, openffi_bool& val) { val = 1; },
 			[&](void* values_to_set, int index, openffi_bool*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required) {},
 
-			[&](void* values_to_set, int index, openffi_handle& val) { val = (openffi_handle)0xABCDEF; },
+			[&](void* values_to_set, int index, openffi_handle& val) { },
 			[&](void* values_to_set, int index, openffi_handle*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required) {},
 
 			[&](void* values_to_set, int index, openffi_string8& val, openffi_size& s)
@@ -388,8 +383,7 @@ void call(
 			openffi_bool_type,
 			openffi_string8_type,
 			openffi_string8_array_type,
-			openffi_uint8_array_type,
-			openffi_handle_type
+			openffi_uint8_array_type
 		};
 
 		cdts_return.build(&vec_types[0], vec_types.size(), nullptr, cbs);
