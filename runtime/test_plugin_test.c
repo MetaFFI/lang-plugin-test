@@ -5,10 +5,10 @@
 
 int main()
 {
-	const char* openffi_home = getenv("OPENFFI_HOME");
+	const char* metaffi_home = getenv("METAFFI_HOME");
 	
 	char xllr_dir[100] = {0};
-	sprintf(xllr_dir, "%s/xllr.so", openffi_home);
+	sprintf(xllr_dir, "%s/xllr.so", metaffi_home);
 	
 	void* xllr_handle = dlopen(xllr_dir, RTLD_NOW | RTLD_GLOBAL);
 	if(!xllr_handle)
@@ -18,7 +18,7 @@ int main()
 	}
 	
 	char lib_dir[100] = {0};
-	sprintf(lib_dir, "%s/xllr.test.so", openffi_home);
+	sprintf(lib_dir, "%s/xllr.test.so", metaffi_home);
 	
 	void* lib_handle = dlopen(lib_dir, RTLD_NOW | RTLD_GLOBAL);
 	if(!lib_handle)
@@ -34,6 +34,6 @@ int main()
 		return -1;
 	}
 	
-	return ((int (*) (const char*, const char*))res)("xllr.test", "package=GuestCode,function=f1,openffi_guest_lib=test_OpenFFIGuest,entrypoint_function=EntryPoint_f1");
+	return ((int (*) (const char*, const char*))res)("xllr.test", "package=GuestCode,function=f1,metaffi_guest_lib=test_MetaFFIGuest,entrypoint_function=EntryPoint_f1");
 	
 }

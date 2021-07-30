@@ -1,7 +1,7 @@
 # XLLR of the *Go* Plugin
 
 Go XLLR plugin calls functions in Go C-Shared dynamic libraries.
-It loads the foreign modules, loads the exported foreign function stub (created by the OpenFFI compiler) and calls it.
+It loads the foreign modules, loads the exported foreign function stub (created by the MetaFFI compiler) and calls it.
 The XLLR plugin is used when **Calling to** *Go*
 
 ## xllr_plugin_interface
@@ -54,7 +54,7 @@ void free_module(
 Lazy load the module, if not loaded.\
 Loads the requested function and calls it.\
 
-The code generated in the host language by the OpenFFI compiler (when compiling "from") is calling a stub function of the foreign function generated the OpenFFI compiler (when compiling "to").\
+The code generated in the host language by the MetaFFI compiler (when compiling "from") is calling a stub function of the foreign function generated the MetaFFI compiler (when compiling "to").\
 The function signature must be of the expected signature:
 ```
 func f(unsigned char* in_params, uint64_t in_params_len, 
