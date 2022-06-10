@@ -5,8 +5,10 @@
 #include <string>
 #include <cstdio>
 #include <cstring>
+#include <runtime/cdts_alloc.h>
 
-using namespace metaffi::runtime;
+// NOLINT(bugprone-macro-parentheses)
+
 using namespace metaffi::utils;
 
 const char* guest_idl = R"({"idl_filename": "test","idl_extension": ".proto","idl_filename_with_extension": "test.proto","idl_full_path": "","modules": [{"name": "Service1","target_language": "test","comment": "Comments for Service1\n","tags": {"metaffi_function_path": "package=main","metaffi_target_language": "test"},"functions": [{"name": "f1","comment": "F1 comment\nparam1 comment\n","tags": {"metaffi_function_path": "function=F1,metaffi_guest_lib=$PWD/temp/test_MetaFFIGuest.so"},"path_to_foreign_function": {"module": "$PWD/temp","package": "GoFuncs","function": "F1"},"parameter_type": "Params1","return_values_type": "Return1","parameters": [{"name": "p1","type": "float64","comment": "= 3.141592","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p2","type": "float32","comment": "= 2.71","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p3","type": "int8","comment": "= -10","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p4","type": "int16","comment": "= -20","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p5","type": "int32","comment": "= -30","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p6","type": "int64","comment": "= -40","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p7","type": "uint8","comment": "= 50","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p8","type": "uint16","comment": "= 60","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p9","type": "uint32","comment": "= 70","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p10","type": "uint64","comment": "= 80","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p11","type": "bool","comment": "= true","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p12","type": "string","comment": "= This is an input","tags": null,"dimensions": 0,"pass_method": ""},{"name": "p13","type": "string","comment": "= {element one, element two}","tags": null,"dimensions": 1,"pass_method": ""},{"name": "p14","type": "uint8","comment": "= {2, 4, 6, 8, 10}","tags": null,"dimensions": 1,"pass_method": ""}],"return_values": [{"name": "r1","type": "float64","comment": "= 0.57721","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r2","type": "float32","comment": "= 3.359","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r3","type": "int8","comment": "= -11","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r4","type": "int16","comment": "= -21","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r5","type": "int32","comment": "= -31","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r6","type": "int64","comment": "= -41","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r7","type": "uint8","comment": "= 51","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r8","type": "uint16","comment": "= 61","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r9","type": "uint32","comment": "= 71","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r10","type": "uint64","comment": "= 81","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r11","type": "bool","comment": "= true","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r12","type": "string","comment": "= This is an output","tags": null,"dimensions": 0,"pass_method": ""},{"name": "r13","type": "string","comment": "= {return one, return two}","tags": null,"dimensions": 1,"pass_method": ""},{"name": "r14","type": "uint8","comment": "= {20, 40, 60, 80, 100}","tags": null,"dimensions": 1,"pass_method": ""}]}]}]})";
@@ -15,7 +17,8 @@ const char* guest_idl = R"({"idl_filename": "test","idl_extension": ".proto","id
 // otherwise - failed
 int test_guest(const char* lang_plugin, const char* function_path)
 {
-	try {
+	try
+	{
 		load_xllr();
 		load_cdt_capi();
 
@@ -26,13 +29,19 @@ int test_guest(const char* lang_plugin, const char* function_path)
 			xllr_free_runtime_plugin("xllr.test", strlen("xllr.test"), &err, reinterpret_cast<uint32_t*>(&err_len));
 			free_xllr();
 		});
-
+		
+		xllr_load_runtime_plugin(lang_plugin, strlen(lang_plugin), &err, reinterpret_cast<uint32_t*>(&err_len));
+		if (err != nullptr) {
+			printf("Failed to load runtime \"%s\". Error: %s\n", lang_plugin, err);
+			return 1;
+		}
+		
 		printf("test_guest - loading function\n");
 		int64_t function_id = xllr_load_function(lang_plugin, strlen(lang_plugin), function_path, strlen(function_path),
 		                                         -1, &err, reinterpret_cast<uint32_t*>(&err_len));
 
 		if (err != nullptr) {
-			printf("Failed to load runtime \"%s\" or function \"%s\". Error: %s\n", lang_plugin, function_path, err);
+			printf("Failed to load function \"%s\". Error: %s\n", function_path, err);
 			return 1;
 		}
 
@@ -59,8 +68,9 @@ int test_guest(const char* lang_plugin, const char* function_path)
 		*/
 
 		printf("preparing parameters\n");
-
-		cdts_wrapper cdts_params(14);
+ 
+		cdt* params_buf = xllr_alloc_cdts_buffer(14);
+		metaffi::runtime::cdts_wrapper cdts_params(params_buf, 14, true);
 
 		std::vector<metaffi_types> vec_types =
 		{
@@ -99,8 +109,8 @@ int test_guest(const char* lang_plugin, const char* function_path)
 
 		std::vector<metaffi_uint8> p14 = {2, 4, 6, 8, 10};
 		std::vector<metaffi_size> p14_dimensions_lengths = {p14.size()};
-
-		cdts_build_callbacks cbs
+		
+		metaffi::runtime::cdts_build_callbacks cbs
 		(
 				[&](void* values_to_set, int index, metaffi_float32& val) { val = p2; },
 				[&](void* values_to_set, int index, metaffi_float32*& arr, metaffi_size*& dimensions_lengths,
@@ -180,10 +190,11 @@ int test_guest(const char* lang_plugin, const char* function_path)
 		cdts_params.build(&vec_types[0], vec_types.size(), nullptr, cbs);
 
 		printf("calling guest function\n");
+		
+		cdt* return_buf = xllr_alloc_cdts_buffer(14);
+		metaffi::runtime::cdts_wrapper cdts_return(return_buf, 14, true);
 
-		cdts_wrapper cdts_return(14);
-
-		xllr_call(lang_plugin, strlen(lang_plugin),
+		xllr_xcall(lang_plugin, strlen(lang_plugin),
 		          function_id,
 		          cdts_params.get_cdts(), cdts_params.get_cdts_length(),
 		          cdts_return.get_cdts(), cdts_return.get_cdts_length(),
@@ -232,10 +243,10 @@ int test_guest(const char* lang_plugin, const char* function_path)
 		metaffi_bool r11;
 		metaffi_string8 r12;
 		metaffi_size r12_len;
-		string_n_array_wrapper<metaffi_string8> r13;
-		numeric_n_array_wrapper<metaffi_uint8> r14;
-
-		cdts_parse_callbacks cps
+		metaffi::runtime::string_n_array_wrapper<metaffi_string8> r13;
+		metaffi::runtime::numeric_n_array_wrapper<metaffi_uint8> r14;
+		
+		metaffi::runtime::cdts_parse_callbacks cps
 		(
 				[&](void* values_to_set, int index, const metaffi_float32& val) { r2 = val; },
 				[&](void* values_to_set, int index, const metaffi_float32* arr,
@@ -264,7 +275,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 				[&](void* values_to_set, int index, const metaffi_uint8& val) { r7 = val; },
 				[&](void* values_to_set, int index, const metaffi_uint8* array,
 				    const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {
-					r14 = numeric_n_array_wrapper<metaffi_uint8>((metaffi_uint8*) array,
+					r14 = metaffi::runtime::numeric_n_array_wrapper<metaffi_uint8>((metaffi_uint8*) array,
 					                                             (metaffi_size*) dimensions_lengths,
 					                                             (metaffi_size&) dimensions);
 				},
@@ -296,7 +307,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 				[&](void* values_to_set, int index, const metaffi_string8* array,
 				    const metaffi_size* strings_lengths, const metaffi_size* dimensions_lengths,
 				    const metaffi_size& dimensions) {
-					r13 = string_n_array_wrapper<metaffi_string8>((metaffi_string8*) array,
+					r13 = metaffi::runtime::string_n_array_wrapper<metaffi_string8>((metaffi_string8*) array,
 					                                             (metaffi_size*) strings_lengths,
 					                                             (metaffi_size*) dimensions_lengths,
 					                                             (metaffi_size&) dimensions);
@@ -316,7 +327,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 #define check_num_var(var_name, expected)\
     if((var_name) != (expected)){        \
         std::stringstream ss;            \
-        ss << #var_name" is not "#expected", but: " << var_name;\
+        ss << #var_name" is not "#expected", but: " << (var_name);\
         throw std::runtime_error(ss.str()); \
     }
 

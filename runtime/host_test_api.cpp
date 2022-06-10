@@ -3,6 +3,7 @@
 #include <boost/filesystem.hpp>
 #include <sstream>
 #include <runtime/cdts_wrapper.h>
+#include <map>
 
 using namespace metaffi::runtime;
 
@@ -30,11 +31,10 @@ catch(std::exception& exc) \
 #define TRUE 1
 #define FALSE 0
 
-std::map<int64_t, std::string> loaded_functions;
 int64_t function_id = 0;
 
 //--------------------------------------------------------------------
-void load_runtime(char** /*err*/, uint32_t* /*err_len*/){ /* No runtime to load */ }
+void load_runtime(char** /*err*/, uint32_t* /*err_len*/){}
 //--------------------------------------------------------------------
 void free_runtime(char** /*err*/, uint32_t* /*err_len*/){ /* No runtime free */ }
 //--------------------------------------------------------------------
@@ -48,10 +48,8 @@ int64_t load_function(const char* function_path, uint32_t function_path_len, cha
 		}
 		
 		int64_t curfunc_id = function_id;
-		loaded_functions[curfunc_id] = std::string(function_path, function_path_len);
 		function_id++;
 		
-		printf("Loaded function path %s. Function ID: %ld\n", loaded_functions[curfunc_id].c_str(), curfunc_id);
 		
 		return curfunc_id;
 	}
@@ -62,17 +60,10 @@ int64_t load_function(const char* function_path, uint32_t function_path_len, cha
 //--------------------------------------------------------------------
 void free_function(int64_t func_id, char** /*err*/, uint32_t* /*err_len*/)
 {
-	auto it = loaded_functions.find(func_id);
-	if(it == loaded_functions.end())
-	{
-		printf("Function ID %ld failed to free as it was not found\n", func_id);
-	}
-	
-	loaded_functions.erase(it);
 	printf("Function ID %ld freed\n", func_id);
 }
 //--------------------------------------------------------------------
-void call(
+void xcall(
 	int64_t func_id,
 	cdt* parameters, uint64_t parameters_length,
 	cdt* return_values, uint64_t return_values_length,
@@ -190,7 +181,7 @@ void call(
 #define check_num_var(var_name, expected) \
 		if((var_name) != (expected)){           \
 		std::stringstream err_ss;               \
-		err_ss << #var_name"=" << var_name << " and not as expected = "#expected;\
+		err_ss << #var_name"=" << (var_name) << " and not as expected = "#expected;\
 		throw std::runtime_error(err_ss.str()); }
 		
 		// check parameters
