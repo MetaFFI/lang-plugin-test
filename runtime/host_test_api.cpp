@@ -38,7 +38,7 @@ void load_runtime(char** /*err*/, uint32_t* /*err_len*/){}
 //--------------------------------------------------------------------
 void free_runtime(char** /*err*/, uint32_t* /*err_len*/){ /* No runtime free */ }
 //--------------------------------------------------------------------
-int64_t load_function(const char* function_path, uint32_t function_path_len, char** out_err, uint32_t* out_err_len)
+int64_t load_function(const char* function_path, uint32_t function_path_len, int8_t params_count, int8_t retval_count, char** out_err, uint32_t* out_err_len)
 {
 	try
 	{
@@ -63,17 +63,16 @@ void free_function(int64_t func_id, char** /*err*/, uint32_t* /*err_len*/)
 	printf("Function ID %ld freed\n", func_id);
 }
 //--------------------------------------------------------------------
-void xcall(
-	int64_t func_id,
-	cdt* parameters, uint64_t parameters_length,
-	cdt* return_values, uint64_t return_values_length,
-	char** out_err, uint64_t *out_err_len
+[[maybe_unused]] void xcall_params_ret(
+		int64_t func_id,
+		cdts params_ret[2],
+		char** out_err, uint64_t* out_err_len
 )
 {
 	try
 	{
-		cdts_wrapper cdts_parameters(parameters, parameters_length);
-
+		cdts_wrapper cdts_parameters(params_ret[0].pcdt, params_ret[1].len);
+		
 		/* This function expects the parameters (in that order):
 		    func_id = 0
 		    
@@ -101,7 +100,7 @@ void xcall(
 		if(func_id != 0){
 			throw std::runtime_error("func_id is not 0");
 		}
-
+		
 		metaffi_float64 p1;
 		metaffi_float32 p2;
 		metaffi_int8 p3;
@@ -117,65 +116,65 @@ void xcall(
 		metaffi_size p12_len;
 		string_n_array_wrapper<metaffi_string8> p13;
 		numeric_n_array_wrapper<metaffi_uint8> p14;
-
+		
 		cdts_parse_callbacks cps
-		(
-			[&](void* values_to_set, int index, const metaffi_float32& val) { p2 = val; },
-			[&](void* values_to_set, int index, const metaffi_float32* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
-
-			[&](void* values_to_set, int index, const metaffi_float64& val) { p1 = val; },
-			[&](void* values_to_set, int index, const metaffi_float64* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
-
-			[&](void* values_to_set, int index, const metaffi_int8& val) { p3 = val; },
-			[&](void* values_to_set, int index, const metaffi_int8* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
-
-			[&](void* values_to_set, int index, const metaffi_int16& val) { p4 = val; },
-			[&](void* values_to_set, int index, const metaffi_int16* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
-
-			[&](void* values_to_set, int index, const metaffi_int32& val) { p5 = val; },
-			[&](void* values_to_set, int index, const metaffi_int32* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
-
-			[&](void* values_to_set, int index, const metaffi_int64& val) { p6 = val; },
-			[&](void* values_to_set, int index, const metaffi_int64* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
-
-			[&](void* values_to_set, int index, const metaffi_uint8& val) { p7 = val; },
-			[&](void* values_to_set, int index, const metaffi_uint8* array, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-			{
-				p14 = numeric_n_array_wrapper<metaffi_uint8>((metaffi_uint8*)array, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-			},
-
-			[&](void* values_to_set, int index, const metaffi_uint16& val) { p8 = val; },
-			[&](void* values_to_set, int index, const metaffi_uint16* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
-
-			[&](void* values_to_set, int index, const metaffi_uint32& val) { p9 = val; },
-			[&](void* values_to_set, int index, const metaffi_uint32* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
-
-			[&](void* values_to_set, int index, const metaffi_uint64& val) { p10 = val; },
-			[&](void* values_to_set, int index, const metaffi_uint64* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
-
-			[&](void* values_to_set, int index, const metaffi_bool& val) { p11 = val; },
-			[&](void* values_to_set, int index, const metaffi_bool* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
-
-			[&](void* values_to_set, int index, const metaffi_handle& val) {},
-			[&](void* values_to_set, int index, const metaffi_handle* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
-
-			[&](void* values_to_set, int index, const metaffi_string8& val, const metaffi_size& s)
-			{
-				p12 = val;
-				p12_len = s;
-			},
-			[&](void* values_to_set, int index, const metaffi_string8* array, const metaffi_size* strings_lengths, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-			{
-				p13 = string_n_array_wrapper<metaffi_string8>((metaffi_string8*)array, (metaffi_size*)strings_lengths, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-			},
-
-			[&](void* values_to_set, int index, const metaffi_string16& val, const metaffi_size& s) {},
-			[&](void* values_to_set, int index, const metaffi_string16*, const metaffi_size*, const metaffi_size*, const metaffi_size&) {},
-
-			[&](void* values_to_set, int index, const metaffi_string32& val, const metaffi_size& s) {},
-			[&](void* values_to_set, int index, const metaffi_string32*, const metaffi_size*, const metaffi_size*, const metaffi_size&) {}
-		);
-
+				(
+						[&](void* values_to_set, int index, const metaffi_float32& val) { p2 = val; },
+						[&](void* values_to_set, int index, const metaffi_float32* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
+						
+						[&](void* values_to_set, int index, const metaffi_float64& val) { p1 = val; },
+						[&](void* values_to_set, int index, const metaffi_float64* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
+						
+						[&](void* values_to_set, int index, const metaffi_int8& val) { p3 = val; },
+						[&](void* values_to_set, int index, const metaffi_int8* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
+						
+						[&](void* values_to_set, int index, const metaffi_int16& val) { p4 = val; },
+						[&](void* values_to_set, int index, const metaffi_int16* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
+						
+						[&](void* values_to_set, int index, const metaffi_int32& val) { p5 = val; },
+						[&](void* values_to_set, int index, const metaffi_int32* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
+						
+						[&](void* values_to_set, int index, const metaffi_int64& val) { p6 = val; },
+						[&](void* values_to_set, int index, const metaffi_int64* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
+						
+						[&](void* values_to_set, int index, const metaffi_uint8& val) { p7 = val; },
+						[&](void* values_to_set, int index, const metaffi_uint8* array, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
+						{
+							p14 = numeric_n_array_wrapper<metaffi_uint8>((metaffi_uint8*)array, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
+						},
+						
+						[&](void* values_to_set, int index, const metaffi_uint16& val) { p8 = val; },
+						[&](void* values_to_set, int index, const metaffi_uint16* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
+						
+						[&](void* values_to_set, int index, const metaffi_uint32& val) { p9 = val; },
+						[&](void* values_to_set, int index, const metaffi_uint32* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
+						
+						[&](void* values_to_set, int index, const metaffi_uint64& val) { p10 = val; },
+						[&](void* values_to_set, int index, const metaffi_uint64* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
+						
+						[&](void* values_to_set, int index, const metaffi_bool& val) { p11 = val; },
+						[&](void* values_to_set, int index, const metaffi_bool* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
+						
+						[&](void* values_to_set, int index, const metaffi_handle& val) {},
+						[&](void* values_to_set, int index, const metaffi_handle* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
+						
+						[&](void* values_to_set, int index, const metaffi_string8& val, const metaffi_size& s)
+						{
+							p12 = val;
+							p12_len = s;
+						},
+						[&](void* values_to_set, int index, const metaffi_string8* array, const metaffi_size* strings_lengths, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
+						{
+							p13 = string_n_array_wrapper<metaffi_string8>((metaffi_string8*)array, (metaffi_size*)strings_lengths, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
+						},
+						
+						[&](void* values_to_set, int index, const metaffi_string16& val, const metaffi_size& s) {},
+						[&](void* values_to_set, int index, const metaffi_string16*, const metaffi_size*, const metaffi_size*, const metaffi_size&) {},
+						
+						[&](void* values_to_set, int index, const metaffi_string32& val, const metaffi_size& s) {},
+						[&](void* values_to_set, int index, const metaffi_string32*, const metaffi_size*, const metaffi_size*, const metaffi_size&) {}
+				);
+		
 		cdts_parameters.parse(nullptr, cps);
 
 #define check_num_var(var_name, expected) \
@@ -199,7 +198,7 @@ void xcall(
 		check_num_var(p10, 80);
 		
 		check_num_var(p11, 1);
-
+		
 		std::string p12_str(p12, p12_len);
 		if(p12_str != "This is an input"){
 			std::stringstream ss;
@@ -247,7 +246,7 @@ void xcall(
 		arr_index[0] = 2; if(p14.get_elem_at(arr_index, 1) != 6){ throw std::runtime_error("p14[2] of type unsigned char is not 6"); }
 		arr_index[0] = 3; if(p14.get_elem_at(arr_index, 1) != 8){ throw std::runtime_error("p14[3] of type unsigned char is not 8"); }
 		arr_index[0] = 4; if(p14.get_elem_at(arr_index, 1) != 10){ throw std::runtime_error("p14[4] of type unsigned char is not 10"); }
-
+		
 		/* This function returns:
 		    double = 0.57721
 		    float = 3.359f
@@ -269,116 +268,142 @@ void xcall(
 		    
 		    bytes = [20, 40, 60, 80, 100]
 		*/
-
+		
 		cdts_build_callbacks cbs
-		(
-			[&](void* values_to_set, int index, metaffi_float32& val) { val = 3.359f; },
-			[&](void* values_to_set, int index, metaffi_float32*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required) {},
-
-			[&](void* values_to_set, int index, metaffi_float64& val) { val = 0.57721; },
-			[&](void* values_to_set, int index, metaffi_float64*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required) {},
-
-			[&](void* values_to_set, int index, metaffi_int8& val) { val = -11; },
-			[&](void* values_to_set, int index, metaffi_int8*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required) {},
-
-			[&](void* values_to_set, int index, metaffi_int16& val) { val = -21; },
-			[&](void* values_to_set, int index, metaffi_int16*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required) {},
-
-			[&](void* values_to_set, int index, metaffi_int32& val) { val = -31; },
-			[&](void* values_to_set, int index, metaffi_int32*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required) {},
-
-			[&](void* values_to_set, int index, metaffi_int64& val) { val = -41; },
-			[&](void* values_to_set, int index, metaffi_int64*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required) {},
-
-			[&](void* values_to_set, int index, metaffi_uint8& val) { val = 51; },
-			[&](void* values_to_set, int index, metaffi_uint8*& array, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required)
-			{
-				array = (metaffi_uint8*)malloc(sizeof(uint8_t)*5);
-				array[0] = 20;
-				array[1] = 40;
-				array[2] = 60;
-				array[3] = 80;
-				array[4] = 100;
-
-				dimensions_lengths = (metaffi_size*)malloc(sizeof(metaffi_size));
-				dimensions_lengths[0] = 5;
-
-				dimensions = 1;
-
-				free_required = true;
-			},
-
-			[&](void* values_to_set, int index, metaffi_uint16& val) { val = 61; },
-			[&](void* values_to_set, int index, metaffi_uint16*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required) {},
-
-			[&](void* values_to_set, int index, metaffi_uint32& val) { val = 71; },
-			[&](void* values_to_set, int index, metaffi_uint32*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required) {},
-
-			[&](void* values_to_set, int index, metaffi_uint64& val) { val = 81; },
-			[&](void* values_to_set, int index, metaffi_uint64*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required) {},
-
-			[&](void* values_to_set, int index, metaffi_bool& val) { val = 1; },
-			[&](void* values_to_set, int index, metaffi_bool*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required) {},
-
-			[&](void* values_to_set, int index, metaffi_handle& val) { },
-			[&](void* values_to_set, int index, metaffi_handle*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required) {},
-
-			[&](void* values_to_set, int index, metaffi_string8& val, metaffi_size& s)
-			{
-				val = (metaffi_string8)calloc(sizeof(metaffi_char8), strlen("This is an output"));
-				strncpy(val, "This is an output", strlen("This is an output"));
-				s = strlen("This is an output");
-			},
-			[&](void* values_to_set, int index, metaffi_string8*& array, metaffi_size*& strings_lengths, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required)
-			{
-				array = (metaffi_string8*)malloc(2*sizeof(metaffi_string8));
-
-				array[0] = (metaffi_string8)calloc(sizeof(metaffi_char8), strlen("return one"));
-				array[1] = (metaffi_string8)calloc(sizeof(metaffi_char8), strlen("return two"));
-				strncpy(array[0], "return one", strlen("return one"));
-				strncpy(array[1], "return two", strlen("return two"));
-
-				strings_lengths = (metaffi_size*)malloc(sizeof(metaffi_size)*2);
-				strings_lengths[0] = strlen("return one");
-				strings_lengths[1] = strlen("return two");
-
-				dimensions_lengths = (metaffi_size*)malloc(sizeof(metaffi_size));
-				dimensions_lengths[0] = 2;
-
-				dimensions = 1;
-
-				free_required = true;
-			},
-
-			[&](void* values_to_set, int index, metaffi_string16& val, metaffi_size& s) {},
-			[&](void* values_to_set, int index, metaffi_string16*&, metaffi_size*&, metaffi_size*&, metaffi_size&, metaffi_bool&) {},
-
-			[&](void* values_to_set, int index, metaffi_string32& val, metaffi_size& s) {},
-			[&](void* values_to_set, int index, metaffi_string32*&, metaffi_size*&, metaffi_size*&, metaffi_size&, metaffi_bool&) {}
-		);
-
-		cdts_wrapper cdts_return(return_values, return_values_length);
-
+				(
+						[&](void* values_to_set, int index, metaffi_float32& val, int) { val = 3.359f; },
+						[&](void* values_to_set, int index, metaffi_float32*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int) {},
+						
+						[&](void* values_to_set, int index, metaffi_float64& val, int) { val = 0.57721; },
+						[&](void* values_to_set, int index, metaffi_float64*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int) {},
+						
+						[&](void* values_to_set, int index, metaffi_int8& val, int) { val = -11; },
+						[&](void* values_to_set, int index, metaffi_int8*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int) {},
+						
+						[&](void* values_to_set, int index, metaffi_int16& val, int) { val = -21; },
+						[&](void* values_to_set, int index, metaffi_int16*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int) {},
+						
+						[&](void* values_to_set, int index, metaffi_int32& val, int) { val = -31; },
+						[&](void* values_to_set, int index, metaffi_int32*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int) {},
+						
+						[&](void* values_to_set, int index, metaffi_int64& val, int) { val = -41; },
+						[&](void* values_to_set, int index, metaffi_int64*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int) {},
+						
+						[&](void* values_to_set, int index, metaffi_uint8& val, int) { val = 51; },
+						[&](void* values_to_set, int index, metaffi_uint8*& array, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int)
+						{
+							array = (metaffi_uint8*)malloc(sizeof(uint8_t)*5);
+							array[0] = 20;
+							array[1] = 40;
+							array[2] = 60;
+							array[3] = 80;
+							array[4] = 100;
+							
+							dimensions_lengths = (metaffi_size*)malloc(sizeof(metaffi_size));
+							dimensions_lengths[0] = 5;
+							
+							dimensions = 1;
+							
+							free_required = true;
+						},
+						
+						[&](void* values_to_set, int index, metaffi_uint16& val, int) { val = 61; },
+						[&](void* values_to_set, int index, metaffi_uint16*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int) {},
+						
+						[&](void* values_to_set, int index, metaffi_uint32& val, int) { val = 71; },
+						[&](void* values_to_set, int index, metaffi_uint32*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int) {},
+						
+						[&](void* values_to_set, int index, metaffi_uint64& val, int) { val = 81; },
+						[&](void* values_to_set, int index, metaffi_uint64*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int) {},
+						
+						[&](void* values_to_set, int index, metaffi_bool& val, int) { val = 1; },
+						[&](void* values_to_set, int index, metaffi_bool*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int) {},
+						
+						[&](void* values_to_set, int index, metaffi_handle& val, int) { },
+						[&](void* values_to_set, int index, metaffi_handle*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int) {},
+						
+						[&](void* values_to_set, int index, metaffi_string8& val, metaffi_size& s, int)
+						{
+							val = (metaffi_string8)calloc(sizeof(metaffi_char8), strlen("This is an output"));
+							strncpy(val, "This is an output", strlen("This is an output"));
+							s = strlen("This is an output");
+						},
+						[&](void* values_to_set, int index, metaffi_string8*& array, metaffi_size*& strings_lengths, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int)
+						{
+							array = (metaffi_string8*)malloc(2*sizeof(metaffi_string8));
+							
+							array[0] = (metaffi_string8)calloc(sizeof(metaffi_char8), strlen("return one"));
+							array[1] = (metaffi_string8)calloc(sizeof(metaffi_char8), strlen("return two"));
+							strncpy(array[0], "return one", strlen("return one"));
+							strncpy(array[1], "return two", strlen("return two"));
+							
+							strings_lengths = (metaffi_size*)malloc(sizeof(metaffi_size)*2);
+							strings_lengths[0] = strlen("return one");
+							strings_lengths[1] = strlen("return two");
+							
+							dimensions_lengths = (metaffi_size*)malloc(sizeof(metaffi_size));
+							dimensions_lengths[0] = 2;
+							
+							dimensions = 1;
+							
+							free_required = true;
+						},
+						
+						[&](void* values_to_set, int index, metaffi_string16& val, metaffi_size& s, int) {},
+						[&](void* values_to_set, int index, metaffi_string16*&, metaffi_size*&, metaffi_size*&, metaffi_size&, metaffi_bool&, int) {},
+						
+						[&](void* values_to_set, int index, metaffi_string32& val, metaffi_size& s, int) {},
+						[&](void* values_to_set, int index, metaffi_string32*&, metaffi_size*&, metaffi_size*&, metaffi_size&, metaffi_bool&, int) {}
+				);
+		
+		cdts_wrapper cdts_return(params_ret[1].pcdt, params_ret[1].len);
+		
 		std::vector<metaffi_types> vec_types =
-		{
-			metaffi_float64_type,
-			metaffi_float32_type,
-			metaffi_int8_type,
-			metaffi_int16_type,
-			metaffi_int32_type,
-			metaffi_int64_type,
-			metaffi_uint8_type,
-			metaffi_uint16_type,
-			metaffi_uint32_type,
-			metaffi_uint64_type,
-			metaffi_bool_type,
-			metaffi_string8_type,
-			metaffi_string8_array_type,
-			metaffi_uint8_array_type
-		};
-
-		cdts_return.build(&vec_types[0], vec_types.size(), nullptr, cbs);
+				{
+						metaffi_float64_type,
+						metaffi_float32_type,
+						metaffi_int8_type,
+						metaffi_int16_type,
+						metaffi_int32_type,
+						metaffi_int64_type,
+						metaffi_uint8_type,
+						metaffi_uint16_type,
+						metaffi_uint32_type,
+						metaffi_uint64_type,
+						metaffi_bool_type,
+						metaffi_string8_type,
+						metaffi_string8_array_type,
+						metaffi_uint8_array_type
+				};
+		
+		cdts_return.build(&vec_types[0], vec_types.size(), nullptr, 0, cbs);
 	}
 	catch_err((char**)out_err, out_err_len, exc.what());
+}
+//--------------------------------------------------------------------
+[[maybe_unused]] void xcall_no_params_ret(
+		int64_t function_id,
+		cdts return_values[1],
+		char** out_err, uint64_t* out_err_len
+)
+{
+
+}
+//--------------------------------------------------------------------
+[[maybe_unused]] void xcall_params_no_ret(
+		int64_t function_id,
+		cdts parameters[1],
+		char** out_err, uint64_t* out_err_len
+)
+{
+
+}
+//--------------------------------------------------------------------
+[[maybe_unused]] void xcall_no_params_no_ret(
+		int64_t function_id,
+		char** out_err, uint64_t* out_err_len
+)
+{
+
 }
 //--------------------------------------------------------------------

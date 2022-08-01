@@ -5,7 +5,7 @@
 #include <string>
 #include <cstdio>
 #include <cstring>
-#include <runtime/cdts_alloc.h>
+#include "../../metaffi-core/XLLR/cdts_alloc.h"
 
 // NOLINT(bugprone-macro-parentheses)
 
@@ -38,7 +38,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 		
 		printf("test_guest - loading function\n");
 		int64_t function_id = xllr_load_function(lang_plugin, strlen(lang_plugin), function_path, strlen(function_path),
-		                                         -1, &err, reinterpret_cast<uint32_t*>(&err_len));
+		                                         -1, 14, 14, &err, reinterpret_cast<uint32_t*>(&err_len));
 
 		if (err != nullptr) {
 			printf("Failed to load function \"%s\". Error: %s\n", function_path, err);
@@ -68,8 +68,9 @@ int test_guest(const char* lang_plugin, const char* function_path)
 		*/
 
 		printf("preparing parameters\n");
- 
-		cdt* params_buf = xllr_alloc_cdts_buffer(14);
+		
+		cdts* params_ret = xllr_alloc_cdts_buffer(14, 14);
+		cdt* params_buf = params_ret[0].pcdt;
 		metaffi::runtime::cdts_wrapper cdts_params(params_buf, 14, true);
 
 		std::vector<metaffi_types> vec_types =
@@ -112,65 +113,65 @@ int test_guest(const char* lang_plugin, const char* function_path)
 		
 		metaffi::runtime::cdts_build_callbacks cbs
 		(
-				[&](void* values_to_set, int index, metaffi_float32& val) { val = p2; },
+				[&](void* values_to_set, int index, metaffi_float32& val, int) { val = p2; },
 				[&](void* values_to_set, int index, metaffi_float32*& arr, metaffi_size*& dimensions_lengths,
-				    metaffi_size& dimensions, metaffi_bool& free_required) {},
+				    metaffi_size& dimensions, metaffi_bool& free_required, int) {},
 
-				[&](void* values_to_set, int index, metaffi_float64& val) { val = p1; },
+				[&](void* values_to_set, int index, metaffi_float64& val, int) { val = p1; },
 				[&](void* values_to_set, int index, metaffi_float64*& arr, metaffi_size*& dimensions_lengths,
-				    metaffi_size& dimensions, metaffi_bool& free_required) {},
+				    metaffi_size& dimensions, metaffi_bool& free_required, int) {},
 
-				[&](void* values_to_set, int index, metaffi_int8& val) { val = p3; },
+				[&](void* values_to_set, int index, metaffi_int8& val, int) { val = p3; },
 				[&](void* values_to_set, int index, metaffi_int8*& arr, metaffi_size*& dimensions_lengths,
-				    metaffi_size& dimensions, metaffi_bool& free_required) {},
+				    metaffi_size& dimensions, metaffi_bool& free_required, int) {},
 
-				[&](void* values_to_set, int index, metaffi_int16& val) { val = p4; },
+				[&](void* values_to_set, int index, metaffi_int16& val, int) { val = p4; },
 				[&](void* values_to_set, int index, metaffi_int16*& arr, metaffi_size*& dimensions_lengths,
-				    metaffi_size& dimensions, metaffi_bool& free_required) {},
+				    metaffi_size& dimensions, metaffi_bool& free_required, int) {},
 
-				[&](void* values_to_set, int index, metaffi_int32& val) { val = p5; },
+				[&](void* values_to_set, int index, metaffi_int32& val, int) { val = p5; },
 				[&](void* values_to_set, int index, metaffi_int32*& arr, metaffi_size*& dimensions_lengths,
-				    metaffi_size& dimensions, metaffi_bool& free_required) {},
+				    metaffi_size& dimensions, metaffi_bool& free_required, int) {},
 
-				[&](void* values_to_set, int index, metaffi_int64& val) { val = p6; },
+				[&](void* values_to_set, int index, metaffi_int64& val, int) { val = p6; },
 				[&](void* values_to_set, int index, metaffi_int64*& arr, metaffi_size*& dimensions_lengths,
-				    metaffi_size& dimensions, metaffi_bool& free_required) {},
+				    metaffi_size& dimensions, metaffi_bool& free_required, int) {},
 
-				[&](void* values_to_set, int index, metaffi_uint8& val) { val = p7; },
+				[&](void* values_to_set, int index, metaffi_uint8& val, int) { val = p7; },
 				[&](void* values_to_set, int index, metaffi_uint8*& array, metaffi_size*& dimensions_lengths,
-				    metaffi_size& dimensions, metaffi_bool& free_required) {
+				    metaffi_size& dimensions, metaffi_bool& free_required, int) {
 					array = &p14[0];
 					dimensions_lengths = &p14_dimensions_lengths[0];
 					dimensions = 1;
 					free_required = false;
 				},
 
-				[&](void* values_to_set, int index, metaffi_uint16& val) { val = p8; },
+				[&](void* values_to_set, int index, metaffi_uint16& val, int) { val = p8; },
 				[&](void* values_to_set, int index, metaffi_uint16*& arr, metaffi_size*& dimensions_lengths,
-				    metaffi_size& dimensions, metaffi_bool& free_required) {},
+				    metaffi_size& dimensions, metaffi_bool& free_required, int) {},
 
-				[&](void* values_to_set, int index, metaffi_uint32& val) { val = p9; },
+				[&](void* values_to_set, int index, metaffi_uint32& val, int) { val = p9; },
 				[&](void* values_to_set, int index, metaffi_uint32*& arr, metaffi_size*& dimensions_lengths,
-				    metaffi_size& dimensions, metaffi_bool& free_required) {},
+				    metaffi_size& dimensions, metaffi_bool& free_required, int) {},
 
-				[&](void* values_to_set, int index, metaffi_uint64& val) { val = p10; },
+				[&](void* values_to_set, int index, metaffi_uint64& val, int) { val = p10; },
 				[&](void* values_to_set, int index, metaffi_uint64*& arr, metaffi_size*& dimensions_lengths,
-				    metaffi_size& dimensions, metaffi_bool& free_required) {},
+				    metaffi_size& dimensions, metaffi_bool& free_required, int) {},
 
-				[&](void* values_to_set, int index, metaffi_bool& val) { val = p11; },
+				[&](void* values_to_set, int index, metaffi_bool& val, int) { val = p11; },
 				[&](void* values_to_set, int index, metaffi_bool*& arr, metaffi_size*& dimensions_lengths,
-				    metaffi_size& dimensions, metaffi_bool& free_required) {},
+				    metaffi_size& dimensions, metaffi_bool& free_required, int) {},
 
-				[&](void* values_to_set, int index, metaffi_handle& val) {},
+				[&](void* values_to_set, int index, metaffi_handle& val, int) {},
 				[&](void* values_to_set, int index, metaffi_handle*& arr, metaffi_size*& dimensions_lengths,
-				    metaffi_size& dimensions, metaffi_bool& free_required) {},
+				    metaffi_size& dimensions, metaffi_bool& free_required, int) {},
 
-				[&](void* values_to_set, int index, metaffi_string8& val, metaffi_size& s) {
+				[&](void* values_to_set, int index, metaffi_string8& val, metaffi_size& s, int) {
 					val = (char*) p12.c_str();
 					s = p12_len;
 				},
 				[&](void* values_to_set, int index, metaffi_string8*& array, metaffi_size*& strings_lengths,
-				    metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required) {
+				    metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int) {
 					array = &p13[0];
 					strings_lengths = &p13_sizes[0];
 					dimensions_lengths = &p13_dimensions_lengths[0];
@@ -178,27 +179,25 @@ int test_guest(const char* lang_plugin, const char* function_path)
 					free_required = false;
 				},
 
-				[&](void* values_to_set, int index, metaffi_string16& val, metaffi_size& s) {},
+				[&](void* values_to_set, int index, metaffi_string16& val, metaffi_size& s, int) {},
 				[&](void* values_to_set, int index, metaffi_string16*&, metaffi_size*&, metaffi_size*&,
-				    metaffi_size&, metaffi_bool&) {},
+				    metaffi_size&, metaffi_bool&, int) {},
 
-				[&](void* values_to_set, int index, metaffi_string32& val, metaffi_size& s) {},
+				[&](void* values_to_set, int index, metaffi_string32& val, metaffi_size& s, int) {},
 				[&](void* values_to_set, int index, metaffi_string32*&, metaffi_size*&, metaffi_size*&,
-				    metaffi_size&, metaffi_bool&) {}
+				    metaffi_size&, metaffi_bool&, int) {}
 		);
 
-		cdts_params.build(&vec_types[0], vec_types.size(), nullptr, cbs);
+		cdts_params.build(&vec_types[0], vec_types.size(), nullptr, 0, cbs);
 
 		printf("calling guest function\n");
 		
-		cdt* return_buf = xllr_alloc_cdts_buffer(14);
+		cdt* return_buf = params_ret[1].pcdt;
 		metaffi::runtime::cdts_wrapper cdts_return(return_buf, 14, true);
-
-		xllr_xcall(lang_plugin, strlen(lang_plugin),
-		          function_id,
-		          cdts_params.get_cdts(), cdts_params.get_cdts_length(),
-		          cdts_return.get_cdts(), cdts_return.get_cdts_length(),
-		          &err, reinterpret_cast<uint64_t*>(&err_len)
+		
+		xllr_xcall_params_ret(function_id,
+			                  params_ret,
+					          &err, reinterpret_cast<uint64_t*>(&err_len)
 		);
 
 		if (err) {
