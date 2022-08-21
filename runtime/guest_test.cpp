@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstring>
 #include "../../metaffi-core/XLLR/cdts_alloc.h"
+#include "utils/foreign_function.h"
 
 // NOLINT(bugprone-macro-parentheses)
 
@@ -19,6 +20,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 {
 	try
 	{
+		printf("test_guest START\n");
 		load_xllr();
 		load_cdt_capi();
 
@@ -36,12 +38,19 @@ int test_guest(const char* lang_plugin, const char* function_path)
 			return 1;
 		}
 		
-		printf("test_guest - loading function\n");
-		int64_t function_id = xllr_load_function(lang_plugin, strlen(lang_plugin), function_path, strlen(function_path),
-		                                         -1, 14, 14, &err, reinterpret_cast<uint32_t*>(&err_len));
+		printf("test_guest plugin: %s - loading function\n", lang_plugin);
+		void* pff = xllr_load_function(lang_plugin, strlen(lang_plugin), function_path, strlen(function_path),
+		                                         nullptr, 14, 14, &err, reinterpret_cast<uint32_t*>(&err_len));
 
-		if (err != nullptr) {
+		if (err != nullptr)
+		{
 			printf("Failed to load function \"%s\". Error: %s\n", function_path, err);
+			return 1;
+		}
+		
+		if(!pff)
+		{
+			printf("Returned NULL for function path: %s\n", function_path);
 			return 1;
 		}
 
@@ -190,15 +199,10 @@ int test_guest(const char* lang_plugin, const char* function_path)
 
 		cdts_params.build(&vec_types[0], vec_types.size(), nullptr, 0, cbs);
 
-		printf("calling guest function\n");
-		
 		cdt* return_buf = params_ret[1].pcdt;
 		metaffi::runtime::cdts_wrapper cdts_return(return_buf, 14, true);
 		
-		xllr_xcall_params_ret(function_id,
-			                  params_ret,
-					          &err, reinterpret_cast<uint64_t*>(&err_len)
-		);
+		((pforeign_function_entrypoint_signature_params_ret)pff)(params_ret, &err, reinterpret_cast<uint64_t*>(&err_len));
 
 		if (err) {
 			printf("Error returned from guest: %s\n", std::string(err, err_len).c_str());

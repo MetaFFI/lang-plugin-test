@@ -31,40 +31,25 @@ catch(std::exception& exc) \
 #define TRUE 1
 #define FALSE 0
 
-int64_t function_id = 0;
+void* pff = 0;
 
 //--------------------------------------------------------------------
 void load_runtime(char** /*err*/, uint32_t* /*err_len*/){}
 //--------------------------------------------------------------------
 void free_runtime(char** /*err*/, uint32_t* /*err_len*/){ /* No runtime free */ }
 //--------------------------------------------------------------------
-int64_t load_function(const char* function_path, uint32_t function_path_len, int8_t params_count, int8_t retval_count, char** out_err, uint32_t* out_err_len)
+void entrypoint(cdts params_ret[2], char** out_err, uint64_t* out_err_len);
+void* load_function(const char* function_path, uint32_t function_path_len, int8_t params_count, int8_t retval_count, char** out_err, uint32_t* out_err_len)
 {
-	try
-	{
-		if(function_path_len == 0)
-		{
-			throw std::runtime_error("No function path");
-		}
-		
-		int64_t curfunc_id = function_id;
-		function_id++;
-		
-		
-		return curfunc_id;
-	}
-	catch_err((char**)out_err, out_err_len, exc.what());
-	
-	return -1;
+	return (void*)entrypoint;
 }
 //--------------------------------------------------------------------
-void free_function(int64_t func_id, char** /*err*/, uint32_t* /*err_len*/)
+void free_function(void* func_id, char** /*err*/, uint32_t* /*err_len*/)
 {
-	printf("Function ID %ld freed\n", func_id);
+	printf("Function ID %p freed\n", func_id);
 }
 //--------------------------------------------------------------------
-[[maybe_unused]] void xcall_params_ret(
-		int64_t func_id,
+[[maybe_unused]] void entrypoint(
 		cdts params_ret[2],
 		char** out_err, uint64_t* out_err_len
 )
@@ -96,10 +81,6 @@ void free_function(int64_t func_id, char** /*err*/, uint32_t* /*err_len*/)
 		    
 		    bytes = [2, 4, 6, 8, 10]
 		*/
-		
-		if(func_id != 0){
-			throw std::runtime_error("func_id is not 0");
-		}
 		
 		metaffi_float64 p1;
 		metaffi_float32 p2;
@@ -379,31 +360,5 @@ void free_function(int64_t func_id, char** /*err*/, uint32_t* /*err_len*/)
 		cdts_return.build(&vec_types[0], vec_types.size(), nullptr, 0, cbs);
 	}
 	catch_err((char**)out_err, out_err_len, exc.what());
-}
-//--------------------------------------------------------------------
-[[maybe_unused]] void xcall_no_params_ret(
-		int64_t function_id,
-		cdts return_values[1],
-		char** out_err, uint64_t* out_err_len
-)
-{
-
-}
-//--------------------------------------------------------------------
-[[maybe_unused]] void xcall_params_no_ret(
-		int64_t function_id,
-		cdts parameters[1],
-		char** out_err, uint64_t* out_err_len
-)
-{
-
-}
-//--------------------------------------------------------------------
-[[maybe_unused]] void xcall_no_params_no_ret(
-		int64_t function_id,
-		char** out_err, uint64_t* out_err_len
-)
-{
-
 }
 //--------------------------------------------------------------------
