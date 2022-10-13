@@ -82,7 +82,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 		cdt* params_buf = params_ret[0].pcdt;
 		metaffi::runtime::cdts_wrapper cdts_params(params_buf, 14, true);
 
-		std::vector<metaffi_types> vec_types =
+		std::vector<metaffi_type_t> vec_types =
 		{
 			metaffi_float64_type,
 			metaffi_float32_type,
@@ -197,7 +197,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 				    metaffi_size&, metaffi_bool&, int) {}
 		);
 
-		cdts_params.build(&vec_types[0], vec_types.size(), nullptr, 0, cbs);
+		cdts_params.build(vec_types.data(), vec_types.size(), nullptr, 0, cbs);
 
 		cdt* return_buf = params_ret[1].pcdt;
 		metaffi::runtime::cdts_wrapper cdts_return(return_buf, 14, true);
