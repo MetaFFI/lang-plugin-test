@@ -43,8 +43,15 @@ int main()
 int main()
 {
 	const char* metaffi_home = getenv("METAFFI_HOME");
+	if(!metaffi_home)
+	{
+		printf("METAFFI_HOME not defined!\n");
+		return -1;
+	}
+	
 	char xllr_dir[100] = {0};
 	sprintf(xllr_dir, "%s/xllr.so", metaffi_home);
+	printf("Loading %s", xllr_dir);
 	void* xllr_handle = dlopen(xllr_dir, RTLD_NOW | RTLD_GLOBAL);
 	if(!xllr_handle)
 	{
@@ -53,13 +60,15 @@ int main()
 	}
 	char lib_dir[100] = {0};
 	sprintf(lib_dir, "%s/xllr.test.so", metaffi_home);
+	printf("Loading %s", lib_dir);
 	void* lib_handle = dlopen(lib_dir, RTLD_NOW | RTLD_GLOBAL);
 	if(!lib_handle)
 	{
 		printf("Failed loading library - %s\n", dlerror());
 		return -1;
 	}
-
+	
+	printf("Loading exported function \"%s\"", "test_guest");
 	void* res = dlsym(lib_handle, "test_guest");
 	if(!res)
 	{
@@ -67,6 +76,7 @@ int main()
 		return -1;
 	}
 
+	printf("Calling test_guest(\"package=GuestCode,function=f1,metaffi_guest_lib=test_MetaFFIGuest,entrypoint_function=EntryPoint_f1\")\n");
 	return ((int (*) (const char*, const char*))res)("xllr.test", "package=GuestCode,function=f1,metaffi_guest_lib=test_MetaFFIGuest,entrypoint_function=EntryPoint_f1");
 	
 }

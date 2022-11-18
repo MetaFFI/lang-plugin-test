@@ -56,8 +56,7 @@ void free_function(void* func_id, char** /*err*/, uint32_t* /*err_len*/)
 {
 	try
 	{
-		cdts_wrapper cdts_parameters(params_ret[0].pcdt, params_ret[1].len);
-		
+		cdts_wrapper cdts_parameters(params_ret[0].pcdt, params_ret[0].len);
 		/* This function expects the parameters (in that order):
 		    func_id = 0
 		    
@@ -108,7 +107,7 @@ void free_function(void* func_id, char** /*err*/, uint32_t* /*err_len*/)
 						
 						[&](void* values_to_set, int index, const metaffi_int8& val) {
 							p3 = val; },
-							
+						
 						[&](void* values_to_set, int index, const metaffi_int8* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions) {},
 						
 						[&](void* values_to_set, int index, const metaffi_int16& val) { p4 = val; },
@@ -159,7 +158,7 @@ void free_function(void* func_id, char** /*err*/, uint32_t* /*err_len*/)
 				);
 		
 		cdts_parameters.parse(nullptr, cps);
-
+		
 #define check_num_var(var_name, expected) \
 		if((var_name) != (expected)){           \
 		std::stringstream err_ss;               \
@@ -360,6 +359,7 @@ void free_function(void* func_id, char** /*err*/, uint32_t* /*err_len*/)
 		};
 		
 		cdts_return.build(vec_types.data(), vec_types.size(), nullptr, 0, cbs);
+		
 	}
 	catch_err((char**)out_err, out_err_len, exc.what());
 }
