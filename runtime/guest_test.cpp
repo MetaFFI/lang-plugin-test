@@ -39,7 +39,7 @@ int test_guest(const char* lang_plugin, const char* function_path)
 		}
 		
 		printf("test_guest plugin: %s - loading function\n", lang_plugin);
-		void* pff = xllr_load_function(lang_plugin, strlen(lang_plugin), function_path, strlen(function_path),
+		void* pff = xllr_load_function(lang_plugin, strlen(lang_plugin), "", 0, function_path, strlen(function_path),
 		                                         nullptr, 14, 14, &err, reinterpret_cast<uint32_t*>(&err_len));
 
 		if (err != nullptr)
