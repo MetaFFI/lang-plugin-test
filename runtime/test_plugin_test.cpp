@@ -1,10 +1,12 @@
-// contains main to test plugin-test
-#include <stdlib.h>
-#include <stdio.h>
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <cstdlib>
+#include <cstdio>
 
 #ifdef _WIN32
-#include <Windows.h>
-int main()
+#include <windows.h>
+
+TEST_CASE( "Test XLLR using Test Plugin", "[xllr.test]" )
 {
 	const char* metaffi_home = getenv("METAFFI_HOME");
 	
@@ -15,38 +17,43 @@ int main()
 	if(!xllr_handle)
 	{
 		printf("Failed loading library %s - 0x%lx\n", xllr_dir, GetLastError());
-		return -1;
+		CAPTURE(GetLastError());
+		REQUIRE(xllr_handle != nullptr);
 	}
 	
 	char lib_dir[100] = {0};
 	sprintf(lib_dir, "%s/xllr.test.dll", metaffi_home);
 	
-	void* lib_handle = LoadLibraryA(lib_dir);
+	HMODULE lib_handle = LoadLibraryA(lib_dir);
 	if(!lib_handle)
 	{
 		printf("Failed loading library - 0x%lx\n", GetLastError());
-		return -1;
+		CAPTURE(GetLastError());
+		REQUIRE(lib_handle != nullptr);
 	}
 	
 	void* res = GetProcAddress(lib_handle, "test_guest");
 	if(!res)
 	{
 		printf("Failed loading symbol \"test_guest\" - 0x%lx\n", GetLastError());
-		return -1;
+		CAPTURE(GetLastError());
+		REQUIRE(res != nullptr);
 	}
 	
-	return ((int (*) (const char*, const char*))res)("xllr.test", "package=GuestCode,function=f1,metaffi_guest_lib=test_MetaFFIGuest,entrypoint_function=EntryPoint_f1");
+	int r = ((int (*) (const char*, const char*))res)("xllr.test", "package=GuestCode,function=f1,metaffi_guest_lib=test_MetaFFIGuest,entrypoint_function=EntryPoint_f1");
 	
+	REQUIRE(r == 0);
 }
 #else
 #include <dlfcn.h>
-int main()
+TEST_CASE( "Test XLLR using Test Plugin", "[xllr.test]" )
 {
 	const char* metaffi_home = getenv("METAFFI_HOME");
 	if(!metaffi_home)
 	{
 		printf("METAFFI_HOME not defined!\n");
-		return -1;
+		CAPTURE("METAFFI_HOME not defined!");
+		REQUIRE(metaffi_home != nullptr);
 	}
 	
 	char xllr_dir[100] = {0};
@@ -56,7 +63,8 @@ int main()
 	if(!xllr_handle)
 	{
 		printf("Failed loading library - %s\n", dlerror());
-		return -1;
+		CAPTURE(dlerror());
+		REQUIRE(xllr_handle != nullptr);
 	}
 	char lib_dir[100] = {0};
 	sprintf(lib_dir, "%s/xllr.test.so", metaffi_home);
@@ -65,7 +73,8 @@ int main()
 	if(!lib_handle)
 	{
 		printf("Failed loading library - %s\n", dlerror());
-		return -1;
+		CAPTURE(dlerror());
+		REQUIRE(lib_handle != nullptr);
 	}
 	
 	printf("Loading exported function \"%s\"", "test_guest");
@@ -73,11 +82,13 @@ int main()
 	if(!res)
 	{
 		printf("Failed loading symbol - %s\n", dlerror());
-		return -1;
+		CAPTURE(dlerror());
+		REQUIRE(res != nullptr);
 	}
 
 	printf("Calling test_guest(\"package=GuestCode,function=f1,metaffi_guest_lib=test_MetaFFIGuest,entrypoint_function=EntryPoint_f1\")\n");
-	return ((int (*) (const char*, const char*))res)("xllr.test", "package=GuestCode,function=f1,metaffi_guest_lib=test_MetaFFIGuest,entrypoint_function=EntryPoint_f1");
+	int r = ((int (*) (const char*, const char*))res)("xllr.test", "package=GuestCode,function=f1,metaffi_guest_lib=test_MetaFFIGuest,entrypoint_function=EntryPoint_f1");
 	
+	REQUIRE(r == 0);
 }
 #endif

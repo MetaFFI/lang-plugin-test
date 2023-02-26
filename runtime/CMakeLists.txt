@@ -1,40 +1,28 @@
-find_package(Boost REQUIRED COMPONENTS filesystem) # Boost library
 
-include(CTest)
-enable_testing()
+#------------------------------- Test Runtime Plugin ------------------------------------------
+project(lang-plugin-test-runtime VERSION 0.0.1)
+
+add_boost(filesystem)
 
 set(target_name "xllr.test")
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-file(GLOB SRC_FILES ${CMAKE_CURRENT_LIST_DIR}/*.cpp ${CMAKE_CURRENT_LIST_DIR}/*.h ${METAFFI_SDK}/runtime/*.c ${METAFFI_SDK}/utils/*.cpp ${METAFFI_SDK}/runtime/*.cpp)
 # build xllr.test
-add_library(${target_name}
-			SHARED
-			${SRC_FILES}
-)
-target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_LIST_DIR} ${Boost_INCLUDE_DIRS} $ENV{METAFFI_HOME} ${METAFFI_SDK}/utils/*.h ${METAFFI_SDK}/runtime/*.h)
-
-set_property(TARGET ${target_name} PROPERTY POSITION_INDEPENDENT_CODE ON)
-
-# remove the "lib" prefix in linux to get the expected filename "xllr.test.[ext]"
-SET_TARGET_PROPERTIES(${target_name} PROPERTIES PREFIX "")
-
-if(NOT WIN32)
-	target_link_libraries(${target_name} Boost::filesystem pthread dl)
-else()
-	target_link_libraries(${target_name} Boost::filesystem Boost::dynamic_linking)
-endif()
+file(GLOB ${target_name}_sources
+		${CMAKE_CURRENT_LIST_DIR}/*.cpp
+		${CMAKE_CURRENT_LIST_DIR}/*.h
+		${METAFFI_SDK}/runtime/cdt_capi_loader.c
+		${METAFFI_SDK}/runtime/cdts_wrapper.cpp)
+add_library(${target_name} SHARED ${${target_name}_sources})
+target_include_directories(${target_name} PRIVATE ${CMAKE_CURRENT_LIST_DIR} ${Boost_INCLUDE_DIRS} ${METAFFI_SDK})
+set_target_properties(${target_name} PROPERTIES PREFIX "" POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(${target_name} PRIVATE Boost::filesystem)
+link_to_dl_for_non_windows(${target_name})
 
 # Copy to metaffi directory
-add_custom_command(TARGET ${target_name} POST_BUILD
-		COMMAND "${CMAKE_COMMAND}" -E copy
-		"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.so"
-		"$ENV{METAFFI_HOME}/${target_name}.so"
-		COMMENT "Copy ${CMAKE_CURRENT_BINARY_DIR}/${target_name}.so -> $ENV{METAFFI_HOME}/${target_name}.so")
+copy_file_from_project_binary_to_metaffi_home(${target_name} "${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
-add_executable(xllr_test ${CMAKE_CURRENT_LIST_DIR}/test_plugin_test.c)
-if(NOT WIN32)
-	target_link_libraries(xllr_test dl)
-endif()
-
-add_test(NAME xllr_test COMMAND xllr_test)
+# unitest
+add_executable(xllr_test_plugin ${CMAKE_CURRENT_LIST_DIR}/test_plugin_test.cpp)
+link_to_dl_for_non_windows(xllr_test_plugin)
+target_link_libraries(xllr_test_plugin PRIVATE Catch2::Catch2)
+add_test(NAME "Test XLLR with Test plugin" COMMAND xllr_test_plugin)
