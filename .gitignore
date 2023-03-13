@@ -1,6 +1,6 @@
 # ------------- vscode -------------
 .vscode
-
+.vs
 # ------------- CLion -------------
 .idea
 
@@ -8,6 +8,8 @@
 build/
 cmake-build*
 output*
+
+out/*
 
 # ------------ Python -------------
 *__pycache__*
